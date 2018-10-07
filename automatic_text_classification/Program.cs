@@ -12,56 +12,43 @@ namespace automatic_text_classification
     {
         private static void Main(string[] args)
         {
-            string pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/Conservative27thMay2015.txt";
-            StreamReader sr = new StreamReader(pathToDir);
-            Hashtable hashTable = new Hashtable();
-            Dictionary<string, int> dictionary = new Dictionary<string, int>();
+            //path to directory containing training data
+            string pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset";
 
-            string doc = File.ReadAllText(pathToDir);
-
-            Console.WriteLine(doc);
+            int fileCount = Directory.GetFiles(pathToDir, "*.*", SearchOption.TopDirectoryOnly).Length;
+            Console.WriteLine("Training data " + fileCount);
             Console.ReadLine();
 
-            Regex reg_exp = new Regex("[^a-zA-Z0-9]");
-            doc = reg_exp.Replace(doc, " "); //Removes punctuation from document
-
-
-            string[] words = doc.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries);
-            var word_query = (from string word in words orderby word select word).Distinct();
-            string[] result = word_query.ToArray();
-            int counter = 0;
-            string delim = " ,.";
-            string[] fields = null;
-            string line = null;
-
-            while (!sr.EndOfStream)
-            {
-                line = sr.ReadLine(); 
-                line.Trim();
-                fields = line.Split(delim.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                counter += fields.Length;  
-                foreach (string word in result)
+                foreach (string fileName in Directory.GetFiles(pathToDir))
                 {
-                    int count = WordFrequency(doc, word);
+                    Console.WriteLine("Filename: {0}", fileName);
+                    string government = DocGovernment(fileName);
 
-                    //hashtable vs dictionary
-                    //hashTable.Add(word, count);
-                    //dictionary.Add(word, count);
+                    StreamReader sr = new StreamReader(fileName);
+                    string doc = File.ReadAllText(fileName);
+
+                    Dictionary<string, int> dict = new Dictionary<string, int>(); // key-value pair word frequency
+
+                    var words = doc.Split(',', ' ', '.'); //lists all words in document
+
+                    foreach (var word in words)
+                    {
+                        if (dict.ContainsKey(word))
+                            dict[word]++;
+                        else
+                            dict.Add(word, 1);
+                    }
+
+                    foreach (var wordFrequency in dict)
+                    {
+                        Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
+                    }
+                    Console.ReadLine();
 
                 }
-            }
 
-            sr.Close();
-            Console.WriteLine("The total word count is {0}", counter);
             Console.ReadLine();
-            /*
-            Console.WriteLine("-------Dictionary------");
-            foreach (KeyValuePair<string, int> kvp in dictionary)
-            {
-                Console.WriteLine(kvp.Key.ToString() + " - " + kvp.Value.ToString());
-            }
-            Console.Read();
-            */
+
         }
 
         //Count the frequency of each unique word.  
@@ -76,7 +63,35 @@ namespace automatic_text_classification
             }
             Console.WriteLine("{0} {1}", count, word);
             return count;
+        }
 
+        public static string DocGovernment(string fileName){
+            //get government from filename
+            string government = "";
+
+            if (fileName.ToLower().Contains("conservative"))
+            {
+                government = "Conservative";
+            }
+            else if (fileName.ToLower().Contains("labour"))
+            {
+                government = "Labour";
+            }
+            else if (fileName.ToLower().Contains("coalition"))
+            {
+                government = "Coalition";
+            }
+            else
+            {
+                Console.WriteLine("Couldn't determine government\nPlease ensure filename of " +
+                                  "training data contains government");
+                Console.ReadLine();
+            }
+
+            Console.WriteLine("Government: {0}", government);
+            //Regex docGovernment = new Regex("[^a-zA-Z0-9]");
+
+            return government;
         }
     }
 }
