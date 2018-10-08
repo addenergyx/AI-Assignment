@@ -15,14 +15,32 @@ namespace automatic_text_classification
             //path to directory containing training data
             string pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset";
 
-            int fileCount = Directory.GetFiles(pathToDir, "*.*", SearchOption.TopDirectoryOnly).Length;
+            double fileCount = Directory.GetFiles(pathToDir, "*.*", SearchOption.TopDirectoryOnly).Length;
             Console.WriteLine("Training data " + fileCount);
 
-            foreach (string file in Directory.GetFiles(pathToDir))
+            string[] files = Directory.GetFiles(pathToDir);
+            var governmentDict = new Dictionary<string, int>();
+
+            foreach (string file in files)
+            {
+                if (governmentDict.ContainsKey(DocGovernment(file))) { governmentDict[DocGovernment(file)]++; }
+                else { governmentDict.Add(DocGovernment(file), 1); } 
+            }
+
+            foreach (var govFrequency in governmentDict)
+            {
+                Console.WriteLine("{0}: {1}", govFrequency.Key, govFrequency.Value);
+            }
+
+            Console.ReadLine();
+
+            foreach (string file in files)
             {
                 Console.WriteLine("Filename: {0}", file);
                 string government = DocGovernment(file);
-
+                double priorProbability = PriorProbabilities(government, fileCount, governmentDict);
+                Console.WriteLine(priorProbability);
+                Console.ReadLine();
                 // key-value pair word frequency
                 var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as as think case-sensitivity will have little/no impact on accuracy of algorithm
                 WordFrequency(file, dict);
@@ -31,23 +49,23 @@ namespace automatic_text_classification
                 StreamReader sr = new StreamReader(stopWordsFile);
                 string stopWordsText = File.ReadAllText(stopWordsFile);
 
-                Console.WriteLine(stopWordsText);
-                Console.ReadLine();
-
                 var stopWords = stopWordsText.Split();
 
                 foreach (var word in stopWords)
                 {
-                    if (dict.ContainsKey(word)){ dict.Remove(word); } //Removing stop words from dictionary
+                    if (dict.ContainsKey(word)) { dict.Remove(word); } //Removing stop words from dictionary
                 }
-
                 foreach (var wordFrequency in dict)
                 {
                     Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
                 }
-
             }
+        }
 
+        public static double PriorProbabilities( string government, double fileCount, Dictionary<string, int> governmentDict) 
+        {
+            double priorProbability = governmentDict[government] / fileCount;
+            return priorProbability;
         }
 
         //Count the frequency of each unique word.  
@@ -59,14 +77,11 @@ namespace automatic_text_classification
 
             foreach (Match match in wordPattern.Matches(document))
             {
-                int currentCount = 0;
-                words.TryGetValue(match.Value, out currentCount);
-
+                words.TryGetValue(match.Value, out int currentCount);
                 currentCount++;
                 words[match.Value] = currentCount;
             }
         }
-
 
         public static string DocGovernment(string fileName)
         {
@@ -91,10 +106,8 @@ namespace automatic_text_classification
                                   "training data contains government");
                 Console.ReadLine();
             }
-
             Console.WriteLine("Government: {0}", government);
             //Regex docGovernment = new Regex("[^a-zA-Z0-9]");
-
             return government;
         }
     }
