@@ -25,11 +25,18 @@ namespace automatic_text_classification
                     string government = DocGovernment(fileName);
 
                     StreamReader sr = new StreamReader(fileName);
-                    string doc = File.ReadAllText(fileName);
+                    string doc = File.ReadAllText(fileName).ToLower(); // Changing all text to lower as think case-sensitivity will have little/no impact on accuracy of algorithm 
 
+                    Console.WriteLine(doc);
+                    Console.ReadLine();
+
+                    doc = Regex.Replace(doc, @"[\p{P}-[']]", ""); //Removes all punctuation apart from apostrophe
+                    
+                    Console.WriteLine(doc);
+                    Console.ReadLine();
+                    
                     Dictionary<string, int> dict = new Dictionary<string, int>(); // key-value pair word frequency
-
-                    var words = doc.Split(',', ' ', '.'); //lists all words in document
+                    var words = doc.Split(' '); //lists all words in document
 
                     foreach (var word in words)
                     {
