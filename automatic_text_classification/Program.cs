@@ -17,62 +17,45 @@ namespace automatic_text_classification
 
             int fileCount = Directory.GetFiles(pathToDir, "*.*", SearchOption.TopDirectoryOnly).Length;
             Console.WriteLine("Training data " + fileCount);
-            Console.ReadLine();
 
-                foreach (string fileName in Directory.GetFiles(pathToDir))
+            foreach (string file in Directory.GetFiles(pathToDir))
                 {
-                    Console.WriteLine("Filename: {0}", fileName);
-                    string government = DocGovernment(fileName);
-
-                    StreamReader sr = new StreamReader(fileName);
-                    string doc = File.ReadAllText(fileName).ToLower(); // Changing all text to lower as think case-sensitivity will have little/no impact on accuracy of algorithm 
-
-                    Console.WriteLine(doc);
-                    Console.ReadLine();
-
-                    doc = Regex.Replace(doc, @"[\p{P}-[']]", ""); //Removes all punctuation apart from apostrophe
+                    Console.WriteLine("Filename: {0}", file);
+                    string government = DocGovernment(file);
                     
-                    Console.WriteLine(doc);
-                    Console.ReadLine();
+                    // key-value pair word frequency
+                    var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as as think case-sensitivity will have little/no impact on accuracy of algorithm
+                    WordFrequency(file, dict);
                     
-                    Dictionary<string, int> dict = new Dictionary<string, int>(); // key-value pair word frequency
-                    var words = doc.Split(' '); //lists all words in document
-
-                    foreach (var word in words)
-                    {
-                        if (dict.ContainsKey(word))
-                            dict[word]++;
-                        else
-                            dict.Add(word, 1);
-                    }
-
                     foreach (var wordFrequency in dict)
                     {
                         Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
                     }
-                    Console.ReadLine();
-
-                }
-
-            Console.ReadLine();
-
+                
+            }
+            
         }
 
         //Count the frequency of each unique word.  
-        public static int WordFrequency(string doc, string word)
+        private static void WordFrequency(string file, Dictionary<string, int> words)
         {
-            int count = 0;
-            int i = 0;
-            while ((i = doc.IndexOf(word, i)) != -1)
+            var document = File.ReadAllText(file);
+
+            var wordPattern = new Regex(@"\w+"); // \w+ matches any word character plus 1, this should account for apostrophes as I think these can affect algorithm performance
+
+            foreach (Match match in wordPattern.Matches(document))
             {
-                i += word.Length; 
-                count++;
+                int currentCount = 0;
+                words.TryGetValue(match.Value, out currentCount);
+
+                currentCount++;
+                words[match.Value] = currentCount;
             }
-            Console.WriteLine("{0} {1}", count, word);
-            return count;
         }
 
-        public static string DocGovernment(string fileName){
+
+        public static string DocGovernment(string fileName)
+        {
             //get government from filename
             string government = "";
 
