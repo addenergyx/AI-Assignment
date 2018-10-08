@@ -19,27 +19,41 @@ namespace automatic_text_classification
             Console.WriteLine("Training data " + fileCount);
 
             foreach (string file in Directory.GetFiles(pathToDir))
+            {
+                Console.WriteLine("Filename: {0}", file);
+                string government = DocGovernment(file);
+
+                // key-value pair word frequency
+                var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as as think case-sensitivity will have little/no impact on accuracy of algorithm
+                WordFrequency(file, dict);
+
+                string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
+                StreamReader sr = new StreamReader(stopWordsFile);
+                string stopWordsText = File.ReadAllText(stopWordsFile);
+
+                Console.WriteLine(stopWordsText);
+                Console.ReadLine();
+
+                var stopWords = stopWordsText.Split();
+
+                foreach (var word in stopWords)
                 {
-                    Console.WriteLine("Filename: {0}", file);
-                    string government = DocGovernment(file);
-                    
-                    // key-value pair word frequency
-                    var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as as think case-sensitivity will have little/no impact on accuracy of algorithm
-                    WordFrequency(file, dict);
-                    
-                    foreach (var wordFrequency in dict)
-                    {
-                        Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
-                    }
-                
+                    if (dict.ContainsKey(word)){ dict.Remove(word); } //Removing stop words from dictionary
+                }
+
+                foreach (var wordFrequency in dict)
+                {
+                    Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
+                }
+
             }
-            
+
         }
 
         //Count the frequency of each unique word.  
         private static void WordFrequency(string file, Dictionary<string, int> words)
         {
-            var document = File.ReadAllText(file);
+            var document = File.ReadAllText(file).ToLower(); //Change file to lower case
 
             var wordPattern = new Regex(@"\w+"); // \w+ matches any word character plus 1, this should account for apostrophes as I think these can affect algorithm performance
 
