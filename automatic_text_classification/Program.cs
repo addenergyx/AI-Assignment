@@ -12,6 +12,9 @@ namespace automatic_text_classification
     {
         private static void Main(string[] args)
         {
+
+            int labTotal = 0, conTotal = 0, coaTotal = 0, wordCount = 0;
+
             //path to directory containing training data
             string pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
 
@@ -46,8 +49,23 @@ namespace automatic_text_classification
                 Console.ReadLine();
                 // key-value pair word frequency
                 var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as as think case-sensitivity will have little/no impact on accuracy of algorithm
-                WordFrequency(file, dict);
+                wordCount = WordFrequency(file, dict);
 
+                switch (government)
+                {
+                    case "Conservative":
+                        conTotal += wordCount;
+                        break;
+                    case "Coalition":
+                        coaTotal += wordCount;
+                        break;
+                    case "Labour":
+                        labTotal += wordCount;
+                        break;
+                }
+
+                Console.WriteLine("{0}, {1}, {2}", coaTotal, conTotal, labTotal);
+                Console.ReadLine();
                 string fileName = Path.GetFileNameWithoutExtension(file);
 
                 /*
@@ -65,17 +83,16 @@ namespace automatic_text_classification
                 foreach (var wordFrequency in dict)
                 {
                     Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
-
                 }
 
                 //Unique words over all training data
                 uniqueDict = uniqueDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-
+                /*
                 String csv = String.Join(
                     Environment.NewLine,
                     dict.Select(d => d.Key + "," + d.Value)
                 );
-                File.WriteAllText(pathToDir + fileName + ".csv", csv);
+                File.WriteAllText(pathToDir + fileName + ".csv", csv);*/
             }
 
             Console.WriteLine("\nUnique dict\n");
@@ -95,10 +112,9 @@ namespace automatic_text_classification
         }
 
         //Count the frequency of each unique word.  
-        private static void WordFrequency(string file, Dictionary<string, int> words)
+        private static int WordFrequency(string file, Dictionary<string, int> words)
         {
             var document = File.ReadAllText(file).ToLower(); //Change file to lower case
-            Console.WriteLine(document+"\n\n");
             string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
             StreamReader sr = new StreamReader(stopWordsFile);
             string stopWordsText = File.ReadAllText(stopWordsFile);
@@ -107,9 +123,10 @@ namespace automatic_text_classification
             var stopWords = stopWordsText.Split();
 
             foreach (var word in stopWords) { document = Regex.Replace(document, "\\b"+word+"\\b", ""); }
-            Console.WriteLine(document + "\n\n");
 
-            var wordPattern = new Regex(@"\w+\w"); // \w+ matches any word character plus 1, this should account for apostrophes as I think these can affect algorithm performance
+            int wordCount = document.Split(' ').Length; //This method of counting words takes a considerable amount of time
+
+            var wordPattern = new Regex(@"\w+"); // \w+ matches any word character plus 1, this should account for apostrophes as I think these can affect algorithm performance
 
             foreach (Match match in wordPattern.Matches(document))
             {
@@ -117,6 +134,8 @@ namespace automatic_text_classification
                 currentCount++;
                 words[match.Value] = currentCount;
             }
+
+            return wordCount;
         }
 
         public static string DocGovernment(string fileName)
