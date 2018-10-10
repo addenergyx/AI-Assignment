@@ -50,6 +50,7 @@ namespace automatic_text_classification
 
                 string fileName = Path.GetFileNameWithoutExtension(file);
 
+                /*
                 string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
                 StreamReader sr = new StreamReader(stopWordsFile);
                 string stopWordsText = File.ReadAllText(stopWordsFile);
@@ -59,7 +60,8 @@ namespace automatic_text_classification
                 foreach (var word in stopWords)
                 {
                     if (dict.ContainsKey(word)) { dict.Remove(word); } //Removing stop words from dictionary
-                }
+                }*/
+
                 foreach (var wordFrequency in dict)
                 {
                     Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
@@ -96,8 +98,18 @@ namespace automatic_text_classification
         private static void WordFrequency(string file, Dictionary<string, int> words)
         {
             var document = File.ReadAllText(file).ToLower(); //Change file to lower case
+            Console.WriteLine(document+"\n\n");
+            string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
+            StreamReader sr = new StreamReader(stopWordsFile);
+            string stopWordsText = File.ReadAllText(stopWordsFile);
+            Console.ReadLine();
 
-            var wordPattern = new Regex(@"\w+"); // \w+ matches any word character plus 1, this should account for apostrophes as I think these can affect algorithm performance
+            var stopWords = stopWordsText.Split();
+
+            foreach (var word in stopWords) { document = Regex.Replace(document, "\\b"+word+"\\b", ""); }
+            Console.WriteLine(document + "\n\n");
+
+            var wordPattern = new Regex(@"\w+\w"); // \w+ matches any word character plus 1, this should account for apostrophes as I think these can affect algorithm performance
 
             foreach (Match match in wordPattern.Matches(document))
             {
