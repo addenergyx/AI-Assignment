@@ -29,24 +29,27 @@ namespace automatic_text_classification
             {
                 if (governmentDict.ContainsKey(DocGovernment(file))) { governmentDict[DocGovernment(file)]++; }
                 else { governmentDict.Add(DocGovernment(file), 1); }
-                Console.WriteLine(file);
+                //Console.WriteLine(file);
             }
 
             foreach (var govFrequency in governmentDict)
             {
-                Console.WriteLine("{0}: {1}", govFrequency.Key, govFrequency.Value);
+                //Console.WriteLine("{0}: {1}", govFrequency.Key, govFrequency.Value);
             }
 
             Console.ReadLine();
-            Dictionary<string, int> uniqueDict = new Dictionary<string, int>(); 
+            Dictionary<string, int> uniqueDict = new Dictionary<string, int>();
+            Dictionary<string, int> labDict = new Dictionary<string, int>();
+            Dictionary<string, int> coaDict = new Dictionary<string, int>();
+            Dictionary<string, int> conDict = new Dictionary<string, int>();
 
             foreach (string file in files)
             {
-                Console.WriteLine("Filename: {0}", file);
+                //Console.WriteLine("Filename: {0}", file);
                 string government = DocGovernment(file);
                 double priorProbability = PriorProbabilities(government, fileCount, governmentDict);
-                Console.WriteLine(priorProbability);
-                Console.ReadLine();
+                //Console.WriteLine(priorProbability);
+                //Console.ReadLine();
                 // key-value pair word frequency
                 var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as as think case-sensitivity will have little/no impact on accuracy of algorithm
                 wordCount = WordFrequency(file, dict);
@@ -55,17 +58,30 @@ namespace automatic_text_classification
                 {
                     case "Conservative":
                         conTotal += wordCount;
+                        conDict = conDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
+                        //conDict.Add("Prior Probability", priorProbability); can't put double in the dictionary
+                        double conPriorProbability = priorProbability;
+                        Console.WriteLine(conPriorProbability);
+                        foreach (var wordFrequency in conDict)
+                        {
+                           Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
+                        }
+                        Console.ReadLine();
                         break;
                     case "Coalition":
-                        coaTotal += wordCount;
+                        coaTotal += wordCount; 
+                        coaDict = coaDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
+                        double coaPriorProbability = priorProbability;
                         break;
                     case "Labour":
-                        labTotal += wordCount;
+                        labTotal += wordCount; 
+                        labDict = labDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
+                        double labPriorProbability = priorProbability;
                         break;
                 }
 
-                Console.WriteLine("{0}, {1}, {2}", coaTotal, conTotal, labTotal);
-                Console.ReadLine();
+                //Console.WriteLine("{0}, {1}, {2}", coaTotal, conTotal, labTotal);
+                //Console.ReadLine();
                 string fileName = Path.GetFileNameWithoutExtension(file);
 
                 /*
@@ -82,23 +98,23 @@ namespace automatic_text_classification
 
                 foreach (var wordFrequency in dict)
                 {
-                    Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
+                  //  Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
                 }
 
                 //Unique words over all training data
                 uniqueDict = uniqueDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-                /*
+
                 String csv = String.Join(
                     Environment.NewLine,
                     dict.Select(d => d.Key + "," + d.Value)
                 );
-                File.WriteAllText(pathToDir + fileName + ".csv", csv);*/
+                File.WriteAllText(pathToDir + fileName + ".csv", csv);
             }
 
-            Console.WriteLine("\nUnique dict\n");
+           // Console.WriteLine("\nUnique dict\n");
             foreach (var wordFrequency in uniqueDict)
             {
-                Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
+                //Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
             }
 
             int nWords = uniqueDict.Count();
@@ -118,7 +134,7 @@ namespace automatic_text_classification
             string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
             StreamReader sr = new StreamReader(stopWordsFile);
             string stopWordsText = File.ReadAllText(stopWordsFile);
-            Console.ReadLine();
+            //Console.ReadLine();
 
             var stopWords = stopWordsText.Split();
 
@@ -161,7 +177,7 @@ namespace automatic_text_classification
                                   "training data contains government");
                 Console.ReadLine();
             }
-            Console.WriteLine("Government: {0}", government);
+            //Console.WriteLine("Government: {0}", government);
             //Regex docGovernment = new Regex("[^a-zA-Z0-9]");
             return government;
         }
