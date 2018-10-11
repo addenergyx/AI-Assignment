@@ -14,6 +14,7 @@ namespace automatic_text_classification
         {
 
             int labTotal = 0, conTotal = 0, coaTotal = 0, wordCount = 0;
+            float conPriorProbability = 0.0f, coaPriorProbability = 0.0f, labPriorProbability = 0.0f;
             //path to directory containing training data
             string pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
 
@@ -46,7 +47,7 @@ namespace automatic_text_classification
             {
                 //Console.WriteLine("Filename: {0}", file);
                 string government = DocGovernment(file);
-                double priorProbability = PriorProbabilities(government, fileCount, governmentDict);
+                float priorProbability = PriorProbabilities(government, fileCount, governmentDict);
                 //Console.WriteLine(priorProbability);
                 //Console.ReadLine();
                 // key-value pair word frequency
@@ -59,7 +60,7 @@ namespace automatic_text_classification
                         conTotal += wordCount; // Total number of words in each category including repeats
                         conDict = conDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
                         //conDict.Add("Prior Probability", priorProbability); can't put double in the dictionary
-                        double conPriorProbability = priorProbability;
+                        conPriorProbability = priorProbability;
                         //Console.WriteLine(conPriorProbability);
                         foreach (var wordFrequency in conDict)
                         {
@@ -70,12 +71,12 @@ namespace automatic_text_classification
                     case "Coalition":
                         coaTotal += wordCount; 
                         coaDict = coaDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-                        double coaPriorProbability = priorProbability;
+                        coaPriorProbability = priorProbability;
                         break;
                     case "Labour":
                         labTotal += wordCount; 
                         labDict = labDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-                        double labPriorProbability = priorProbability;
+                        labPriorProbability = priorProbability;
                         break;
                 }
 
@@ -145,12 +146,45 @@ namespace automatic_text_classification
             {
                 Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
             }
+            //Console.ReadLine();
+
+            //path to directory containing testing data
+            string pathToFile = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/test1.txt";
+            var testDict = new Dictionary<string, int>();
+
+            WordFrequency(pathToFile, testDict);
+            float conProb = 0.0f, coaProb = 0.0f, labProb = 0.0f;
+
+            foreach (var word in testDict.Keys)
+            {
+                if (concpdict.ContainsKey(word)) { conProb = conProb + (concpdict[word] * testDict[word]); }
+                if (coacpdict.ContainsKey(word)) { coaProb = coaProb + (coacpdict[word] * testDict[word]); }
+                if (labcpdict.ContainsKey(word)) { labProb = conProb + (labcpdict[word] * testDict[word]); }
+            }
+
+            conProb = conProb * conPriorProbability;
+            coaProb = coaProb * coaPriorProbability;
+            labProb = labProb * labPriorProbability;
+
+            var predDict = new Dictionary<string, float>
+            {
+                { "Labour", labProb },
+                {"Conservative", conProb},
+                {"Coalition", coaProb}
+            };
+
+            Console.WriteLine("Probabiity of Conservative: " + conProb);
+            Console.WriteLine("Probabiity of Coalition: " + coaProb);
+            Console.WriteLine("Probabiity of Labour: " + labProb);
+            var best = predDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
+            Console.WriteLine("---------------------");
+            Console.WriteLine("This document is predicted to be " + best);
             Console.ReadLine();
         }
 
-        public static double PriorProbabilities( string government, double fileCount, Dictionary<string, int> governmentDict) 
+        public static float PriorProbabilities( string government, double fileCount, Dictionary<string, int> governmentDict) 
         {
-            double priorProbability = governmentDict[government] / fileCount;
+            float priorProbability = governmentDict[government] / (float)fileCount;
             return priorProbability;
         }
 
