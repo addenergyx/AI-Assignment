@@ -14,7 +14,6 @@ namespace automatic_text_classification
         {
 
             int labTotal = 0, conTotal = 0, coaTotal = 0, wordCount = 0;
-
             //path to directory containing training data
             string pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
 
@@ -57,16 +56,16 @@ namespace automatic_text_classification
                 switch (government)
                 {
                     case "Conservative":
-                        conTotal += wordCount;
+                        conTotal += wordCount; // Total number of words in each category including repeats
                         conDict = conDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
                         //conDict.Add("Prior Probability", priorProbability); can't put double in the dictionary
                         double conPriorProbability = priorProbability;
-                        Console.WriteLine(conPriorProbability);
+                        //Console.WriteLine(conPriorProbability);
                         foreach (var wordFrequency in conDict)
                         {
-                           Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
+                         //  Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
                         }
-                        Console.ReadLine();
+                        //Console.ReadLine();
                         break;
                     case "Coalition":
                         coaTotal += wordCount; 
@@ -103,12 +102,12 @@ namespace automatic_text_classification
 
                 //Unique words over all training data
                 uniqueDict = uniqueDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-
+                /*
                 String csv = String.Join(
                     Environment.NewLine,
                     dict.Select(d => d.Key + "," + d.Value)
                 );
-                File.WriteAllText(pathToDir + fileName + ".csv", csv);
+                File.WriteAllText(pathToDir + fileName + ".csv", csv);*/
             }
 
            // Console.WriteLine("\nUnique dict\n");
@@ -117,8 +116,36 @@ namespace automatic_text_classification
                 //Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
             }
 
-            int nWords = uniqueDict.Count();
+            int nWords = uniqueDict.Count(); //Total number of unique words throughout training documents
 
+            var concpdict = new Dictionary<string, float>();
+            var coacpdict = new Dictionary<string, float>();
+            var labcpdict = new Dictionary<string, float>();
+
+
+            foreach (KeyValuePair<string, int> fcat in conDict)
+            {
+                //Console.WriteLine(fcat.Value); Console.ReadLine();
+                int ffcat = fcat.Value;
+                float cp = ConditionalProbability(ffcat, conTotal, nWords);
+                concpdict.Add(fcat.Key, cp); // Building conditional probability table
+            }
+            foreach (KeyValuePair<string, int> fcat in coaDict)
+            {
+                float cp = ConditionalProbability(fcat.Value, coaTotal, nWords);
+                coacpdict.Add(fcat.Key, cp); 
+            }
+            foreach (KeyValuePair<string, int> fcat in labDict)
+            {
+                float cp = ConditionalProbability(fcat.Value, labTotal, nWords);
+                labcpdict.Add(fcat.Key, cp); 
+            }
+
+            foreach (var wordFrequency in concpdict)
+            {
+                Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
+            }
+            Console.ReadLine();
         }
 
         public static double PriorProbabilities( string government, double fileCount, Dictionary<string, int> governmentDict) 
@@ -140,7 +167,7 @@ namespace automatic_text_classification
 
             foreach (var word in stopWords) { document = Regex.Replace(document, "\\b"+word+"\\b", ""); }
 
-            int wordCount = document.Split(' ').Length; //This method of counting words takes a considerable amount of time
+            int wordCount = document.Split(' ').Length; //Total number of words in each doc including repeats. This method of counting words takes a considerable amount of time
 
             var wordPattern = new Regex(@"\w+"); // \w+ matches any word character plus 1, this should account for apostrophes as I think these can affect algorithm performance
 
@@ -152,6 +179,16 @@ namespace automatic_text_classification
             }
 
             return wordCount;
+        }
+
+        public static float ConditionalProbability(int fcat, int ncat, int nWords)
+        {
+            //Console.WriteLine("{0},{1},{2}",fcat,ncat,nWords);
+            float top = fcat + 1;
+            float bottom = ncat + nWords;
+            float conditionalProbability = top / bottom;
+            Console.WriteLine(conditionalProbability);
+            return conditionalProbability;
         }
 
         public static string DocGovernment(string fileName)
