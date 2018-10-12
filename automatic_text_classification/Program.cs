@@ -12,147 +12,15 @@ namespace automatic_text_classification
     {
         private static void Main(string[] args)
         {
-
-            int labTotal = 0, conTotal = 0, coaTotal = 0, wordCount = 0;
-            float conPriorProbability = 0.0f, coaPriorProbability = 0.0f, labPriorProbability = 0.0f;
-            //path to directory containing training data
-            string pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
-
-            double fileCount = Directory.GetFiles(pathToDir, "*.*", SearchOption.TopDirectoryOnly).Length;
-            Console.WriteLine("Training data " + fileCount);
-
-            string[] files = Directory.GetFiles(pathToDir);
-
-            var governmentDict = new Dictionary<string, int>();
-
-            foreach (string file in files)
-            {
-                if (governmentDict.ContainsKey(DocGovernment(file))) { governmentDict[DocGovernment(file)]++; }
-                else { governmentDict.Add(DocGovernment(file), 1); }
-                //Console.WriteLine(file);
-            }
-
-            foreach (var govFrequency in governmentDict)
-            {
-                //Console.WriteLine("{0}: {1}", govFrequency.Key, govFrequency.Value);
-            }
-
+            Menu display = new Menu();
             Console.ReadLine();
-            Dictionary<string, int> uniqueDict = new Dictionary<string, int>();
-            Dictionary<string, int> labDict = new Dictionary<string, int>();
-            Dictionary<string, int> coaDict = new Dictionary<string, int>();
-            Dictionary<string, int> conDict = new Dictionary<string, int>();
+        }
 
-            foreach (string file in files)
-            {
-                //Console.WriteLine("Filename: {0}", file);
-                string government = DocGovernment(file);
-                float priorProbability = PriorProbabilities(government, fileCount, governmentDict);
-                //Console.WriteLine(priorProbability);
-                //Console.ReadLine();
-                // key-value pair word frequency
-                var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as as think case-sensitivity will have little/no impact on accuracy of algorithm
-                wordCount = WordFrequency(file, dict);
+        public static void Classification(Dictionary<string, int> testDict, Dictionary<string, float> concpdict, 
+                                          Dictionary<string, float> coacpdict, Dictionary<string, float> labcpdict, 
+                                          float conPriorProbability, float coaPriorProbability, float labPriorProbability)
+        {
 
-                switch (government)
-                {
-                    case "Conservative":
-                        conTotal += wordCount; // Total number of words in each category including repeats
-                        conDict = conDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-                        //conDict.Add("Prior Probability", priorProbability); can't put double in the dictionary
-                        conPriorProbability = priorProbability;
-                        //Console.WriteLine(conPriorProbability);
-                        foreach (var wordFrequency in conDict)
-                        {
-                         //  Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
-                        }
-                        //Console.ReadLine();
-                        break;
-                    case "Coalition":
-                        coaTotal += wordCount; 
-                        coaDict = coaDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-                        coaPriorProbability = priorProbability;
-                        break;
-                    case "Labour":
-                        labTotal += wordCount; 
-                        labDict = labDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-                        labPriorProbability = priorProbability;
-                        break;
-                }
-
-                //Console.WriteLine("{0}, {1}, {2}", coaTotal, conTotal, labTotal);
-                //Console.ReadLine();
-                string fileName = Path.GetFileNameWithoutExtension(file);
-
-                /*
-                string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
-                StreamReader sr = new StreamReader(stopWordsFile);
-                string stopWordsText = File.ReadAllText(stopWordsFile);
-
-                var stopWords = stopWordsText.Split();
-
-                foreach (var word in stopWords)
-                {
-                    if (dict.ContainsKey(word)) { dict.Remove(word); } //Removing stop words from dictionary
-                }*/
-
-                foreach (var wordFrequency in dict)
-                {
-                  //  Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
-                }
-
-                //Unique words over all training data
-                uniqueDict = uniqueDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-                /*
-                String csv = String.Join(
-                    Environment.NewLine,
-                    dict.Select(d => d.Key + "," + d.Value)
-                );
-                File.WriteAllText(pathToDir + fileName + ".csv", csv);*/
-            }
-
-           // Console.WriteLine("\nUnique dict\n");
-            foreach (var wordFrequency in uniqueDict)
-            {
-                //Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
-            }
-
-            int nWords = uniqueDict.Count(); //Total number of unique words throughout training documents
-
-            var concpdict = new Dictionary<string, float>();
-            var coacpdict = new Dictionary<string, float>();
-            var labcpdict = new Dictionary<string, float>();
-
-
-            foreach (KeyValuePair<string, int> fcat in conDict)
-            {
-                //Console.WriteLine(fcat.Value); Console.ReadLine();
-                int ffcat = fcat.Value;
-                float cp = ConditionalProbability(ffcat, conTotal, nWords);
-                concpdict.Add(fcat.Key, cp); // Building conditional probability table
-            }
-            foreach (KeyValuePair<string, int> fcat in coaDict)
-            {
-                float cp = ConditionalProbability(fcat.Value, coaTotal, nWords);
-                coacpdict.Add(fcat.Key, cp); 
-            }
-            foreach (KeyValuePair<string, int> fcat in labDict)
-            {
-                float cp = ConditionalProbability(fcat.Value, labTotal, nWords);
-                labcpdict.Add(fcat.Key, cp); 
-            }
-
-            foreach (var wordFrequency in concpdict)
-            {
-                Console.WriteLine("{0}: {1}", wordFrequency.Key, wordFrequency.Value);
-            }
-            //Console.ReadLine();
-
-            //path to directory containing testing data
-            string pathToFile = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/test1.txt";
-            var testDict = new Dictionary<string, int>();
-
-            WordFrequency(pathToFile, testDict);
             float conProb = 0.0f, coaProb = 0.0f, labProb = 0.0f;
 
             foreach (var word in testDict.Keys)
@@ -167,19 +35,26 @@ namespace automatic_text_classification
             labProb = labProb * labPriorProbability;
 
             var predDict = new Dictionary<string, float>
-            {
-                { "Labour", labProb },
-                {"Conservative", conProb},
-                {"Coalition", coaProb}
-            };
+                        {
+                            { "Labour", labProb },
+                            {"Conservative", conProb},
+                            {"Coalition", coaProb}
+                        };
 
-            Console.WriteLine("Probabiity of Conservative: " + conProb);
+            foreach (KeyValuePair<string,float> pred in predDict)
+            {
+                Console.WriteLine("Probability of {0}: {1}", pred.Key, pred.Value);
+            }
+
+            /*
+            Console.WriteLine("\nProbabiity of Conservative: " + conProb);
             Console.WriteLine("Probabiity of Coalition: " + coaProb);
             Console.WriteLine("Probabiity of Labour: " + labProb);
+            */
+
             var best = predDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
             Console.WriteLine("---------------------");
             Console.WriteLine("This document is predicted to be " + best);
-            Console.ReadLine();
         }
 
         public static float PriorProbabilities( string government, double fileCount, Dictionary<string, int> governmentDict) 
@@ -189,7 +64,7 @@ namespace automatic_text_classification
         }
 
         //Count the frequency of each unique word.  
-        private static int WordFrequency(string file, Dictionary<string, int> words)
+        public static int WordFrequency(string file, Dictionary<string, int> words)
         {
             var document = File.ReadAllText(file).ToLower(); //Change file to lower case
             string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
