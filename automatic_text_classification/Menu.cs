@@ -112,8 +112,7 @@ namespace automatic_text_classification
                         foreach (KeyValuePair<string, int> fcat in conDict)
                         {
                             //Console.WriteLine(fcat.Value); Console.ReadLine();
-                            int ffcat = fcat.Value;
-                            float cp = MainClass.ConditionalProbability(ffcat, conTotal, nWords);
+                            float cp = MainClass.ConditionalProbability(fcat.Value, conTotal, nWords);
                             concpdict.Add(fcat.Key, cp); // Building conditional probability table
                         }
                         foreach (KeyValuePair<string, int> fcat in coaDict)
@@ -127,17 +126,20 @@ namespace automatic_text_classification
                             labcpdict.Add(fcat.Key, cp);
                         }
 
-                        string pathToFile = PathToTestDocument();
+                        //Tables
+                        //condict and concpdict
+
+                        string pathToTest = PathToTestDocument();
                         //string pathToFile = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/test1.txt";
 
-                        while (!File.Exists(pathToFile)) 
+                        while (!File.Exists(pathToTest)) 
                         {
                             Console.WriteLine("File does not exist!!! Please enter full path to test document");
-                            pathToFile = Console.ReadLine().Trim();
+                            pathToTest = Console.ReadLine().Trim();
                         }
 
                         Dictionary < string, int> testDict = new Dictionary<string, int>();
-                        MainClass.WordFrequency(pathToFile, testDict);
+                        MainClass.WordFrequency(pathToTest, testDict);
                         MainClass.Classification(testDict, concpdict, coacpdict, labcpdict, conPriorProbability,
                                                  coaPriorProbability, labPriorProbability);
 
@@ -147,7 +149,17 @@ namespace automatic_text_classification
 
                     case 2:
                         Console.Clear();
-                        string pathToTest = PathToTestDocument();
+                        string pathToFile = PathToTestDocument();
+                        while (!File.Exists(pathToFile))
+                        {
+                            Console.WriteLine("File does not exist!!! Please enter full path to test document");
+                            pathToFile = Console.ReadLine().Trim();
+                        }
+                        Dictionary<string, int> fileDict = new Dictionary<string, int>();
+                        MainClass.WordFrequency(pathToFile, fileDict);
+
+                        //MainClass.Classification(testDict, concpdict, coacpdict, labcpdict, conPriorProbability,
+                        //coaPriorProbability, labPriorProbability);
                         AnykeyToContinue();
                         Console.Clear();
                         break;
@@ -159,7 +171,7 @@ namespace automatic_text_classification
 
                     default:
                         Console.Clear();
-                        Console.WriteLine("\nEnter a valid number to continue. ");
+                        Console.WriteLine("\nEnter a valid number to continue... ");
                         break;
                         
                 }
