@@ -40,7 +40,7 @@ namespace automatic_text_classification
                             {"Conservative", conProb},
                             {"Coalition", coaProb}
                         };
-
+            Console.Clear();
             foreach (KeyValuePair<string,float> pred in predDict)
             {
                 Console.WriteLine("Probability of {0}: {1}", pred.Key, pred.Value);
@@ -126,6 +126,27 @@ namespace automatic_text_classification
             //Console.WriteLine("Government: {0}", government);
             //Regex docGovernment = new Regex("[^a-zA-Z0-9]");
             return government;
+        }
+
+        public static void WriteBayesianNetwork (Dictionary<string, int> dict, Dictionary<string, float> cpDict)
+        {
+            string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); //Multiplatform home environment
+
+            Console.WriteLine("Enter file name to save Navie Bayes table to\n[Make sure to include extension '.csv']");
+            string fileName = Console.ReadLine();
+
+            string filePath = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/";
+
+            String csv = String.Join(
+                Environment.NewLine,
+                dict.Select(d => d.Key + "," + d.Value + "," + cpDict[d.Key])
+            );
+            File.WriteAllText(filePath + fileName, csv);
+        }
+
+        public static void ReadBayesianNetwork()
+        {
+
         }
     }
 }
