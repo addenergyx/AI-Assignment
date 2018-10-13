@@ -110,7 +110,6 @@ namespace automatic_text_classification
                         var coacpdict = new Dictionary<string, float>();
                         var labcpdict = new Dictionary<string, float>();
 
-
                         foreach (KeyValuePair<string, int> fcat in conDict)
                         {
                             //Console.WriteLine(fcat.Value); Console.ReadLine();
@@ -156,13 +155,44 @@ namespace automatic_text_classification
                     case 2:
                         Console.Clear();
                         string pathToFile = PathToTestDocument();
+                        //Dictionary<string, string> govPathDict = new Dictionary<string, string>();
+
+                        string[] governments = { "Conservative", "Labour", "Coalition" };
+                        string[] paths = new string[3];
+
+                        //int j = 0;
+                        var a = new Dictionary<string, int>();
+                        var b = new Dictionary<string, float>();
+
+
+                        foreach ( string government in governments)
+                        {
+                            string pathToBayesian = PathToBayesianNetwork(government);
+                            MainClass.ReadBayesianNetwork(pathToBayesian, a, b);
+                            switch (government)
+                            {
+                                case "Conservative":
+                                    conDict = a; concpdict = b;
+                                    break;
+                                case "Labour":
+                                    labDict = a; labcpdict = b;
+                                    break;
+                                case "Coalition":
+                                    coaDict = a; coacpdict = b;
+                                    break;
+                            }
+                        }
+
                         while (!File.Exists(pathToFile))
                         {
                             Console.WriteLine("File does not exist!!! Please enter full path to test document");
                             pathToFile = Console.ReadLine().Trim();
                         }
+
                         Dictionary<string, int> fileDict = new Dictionary<string, int>();
                         MainClass.WordFrequency(pathToFile, fileDict);
+
+
 
                         //MainClass.Classification(testDict, concpdict, coacpdict, labcpdict, conPriorProbability,
                         //coaPriorProbability, labPriorProbability);
@@ -217,6 +247,11 @@ namespace automatic_text_classification
         private string PathToTestDocument()
         {
             return AskForInfoString("Please enter full path to test document");
+        }
+
+        private string PathToBayesianNetwork(string government)
+        {
+            return AskForInfoString("Please enter full path to Bayesian Network for " + government);
         }
 
         public static void AnykeyToContinue()

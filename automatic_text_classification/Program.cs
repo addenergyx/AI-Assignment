@@ -144,8 +144,27 @@ namespace automatic_text_classification
             File.WriteAllText(filePath + fileName, csv);
         }
 
-        public static void ReadBayesianNetwork()
+        public static void ReadBayesianNetwork(string file, Dictionary<string, int> a, Dictionary<string, float> b)
         {
+            StreamReader sr = new StreamReader(file);
+            string data = Console.ReadLine();
+
+            while (data != null)
+            {
+                Console.WriteLine(data);
+                Console.ReadLine();
+                string[] values = data.Split(',');
+                string word = values[0];
+                int frequency = Int32.Parse(values[1]);
+                float conditionalprobability = Int32.Parse(values[2]);
+
+                a.Add(word, frequency);
+                b.Add(word, conditionalprobability);
+            }
+
+            //var dict = File.ReadLines(file).Select(line => line.Split(',')).ToDictionary(line => line[0], line => line[1]);
+            //var bndict = new Dictionary<string, Dictionary<int, float>>();
+
 
         }
     }
