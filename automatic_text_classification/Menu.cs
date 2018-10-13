@@ -12,6 +12,8 @@ namespace automatic_text_classification
     {
 
         const int exit = 0;
+        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); //Multiplatform home environment
+
         public Menu()
         {
             int labTotal = 0, conTotal = 0, coaTotal = 0, wordCount = 0;
@@ -27,12 +29,12 @@ namespace automatic_text_classification
                         Console.Clear();
                         Title();
                         string pathToDir = PathToDirectory(); //path to directory containing training data
-                        //string pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
 
                         while (!Directory.Exists(pathToDir)) //throw new ArgumentException("File doesn't exist, enter new path")
                         {
                             Console.WriteLine("Path does not exist!!! Please enter full path to training data directory");
-                            pathToDir = Console.ReadLine().Trim();
+                            pathToDir = Console.ReadLine().Trim(); 
+                            pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
                         }
 
                         double fileCount = Directory.GetFiles(pathToDir, "*.*", SearchOption.TopDirectoryOnly).Length;
@@ -130,18 +132,22 @@ namespace automatic_text_classification
                         //condict and concpdict
 
                         string pathToTest = PathToTestDocument();
-                        //string pathToFile = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/test1.txt";
 
                         while (!File.Exists(pathToTest)) 
                         {
                             Console.WriteLine("File does not exist!!! Please enter full path to test document");
-                            pathToTest = Console.ReadLine().Trim();
+                            pathToTest = Console.ReadLine().Trim(); 
+                            pathToTest = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/test1.txt";
                         }
 
                         Dictionary < string, int> testDict = new Dictionary<string, int>();
                         MainClass.WordFrequency(pathToTest, testDict);
                         MainClass.Classification(testDict, concpdict, coacpdict, labcpdict, conPriorProbability,
                                                  coaPriorProbability, labPriorProbability);
+
+                        MainClass.WriteBayesianNetwork (conDict, concpdict);
+                        MainClass.WriteBayesianNetwork (coaDict, coacpdict);
+                        MainClass.WriteBayesianNetwork (labDict, labcpdict);
 
                         AnykeyToContinue();
                         Console.Clear();
@@ -171,7 +177,7 @@ namespace automatic_text_classification
 
                     default:
                         Console.Clear();
-                        Console.WriteLine("\nEnter a valid number to continue... ");
+                        Console.WriteLine("Enter a valid number to continue... ");
                         break;
                         
                 }
@@ -181,7 +187,6 @@ namespace automatic_text_classification
 
         static int DisplayMenu()
         {
-            int result = 0;
             bool validInput;
 
             Console.WriteLine("Queen's Speech Automatic Text Classification");
@@ -192,10 +197,14 @@ namespace automatic_text_classification
             Console.WriteLine("(0) Quit");
 
             string userInput = Console.ReadLine();
-            validInput = Int32.TryParse(userInput, out result);
+            validInput = Int32.TryParse(userInput, out int result);
 
-            if (validInput) { return result; }
-            else { Console.WriteLine("Invalid Input"); }
+            while (!validInput)
+            { 
+                Console.WriteLine("Invalid Input, Enter either (0),(1),(2)"); 
+                userInput = Console.ReadLine(); 
+                validInput = Int32.TryParse(userInput, out result); 
+            }
            
             return result;
         }
