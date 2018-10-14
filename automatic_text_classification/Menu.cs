@@ -17,7 +17,7 @@ namespace automatic_text_classification
         public Menu()
         {
             int labTotal = 0, conTotal = 0, coaTotal = 0, wordCount = 0;
-            float conPriorProbability = 0.0f, coaPriorProbability = 0.0f, labPriorProbability = 0.0f;
+            double conPriorProbability = 0D, coaPriorProbability = 0D, labPriorProbability = 0D;
             int answer = 3;
 
             do
@@ -58,7 +58,7 @@ namespace automatic_text_classification
                         foreach (string file in files)
                         {
                             string government = MainClass.DocGovernment(file);
-                            float priorProbability = MainClass.PriorProbabilities(government, fileCount, governmentDict);
+                            double priorProbability = MainClass.PriorProbabilities(government, fileCount, governmentDict);
      
                             // key-value pair word frequency
                             var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as as think case-sensitivity will have little/no impact on accuracy of algorithm
@@ -105,24 +105,24 @@ namespace automatic_text_classification
 
                         int nWords = uniqueDict.Count(); //Total number of unique words throughout training documents
 
-                        var concpdict = new Dictionary<string, float>();
-                        var coacpdict = new Dictionary<string, float>();
-                        var labcpdict = new Dictionary<string, float>();
+                        var concpdict = new Dictionary<string, double>();
+                        var coacpdict = new Dictionary<string, double>();
+                        var labcpdict = new Dictionary<string, double>();
 
                         foreach (KeyValuePair<string, int> fcat in conDict)
                         {
                             //Console.WriteLine(fcat.Value); Console.ReadLine();
-                            float cp = MainClass.ConditionalProbability(fcat.Value, conTotal, nWords);
+                            double cp = MainClass.ConditionalProbability(fcat.Value, conTotal, nWords);
                             concpdict.Add(fcat.Key, cp); // Building conditional probability table
                         }
                         foreach (KeyValuePair<string, int> fcat in coaDict)
                         {
-                            float cp = MainClass.ConditionalProbability(fcat.Value, coaTotal, nWords);
+                            double cp = MainClass.ConditionalProbability(fcat.Value, coaTotal, nWords);
                             coacpdict.Add(fcat.Key, cp);
                         }
                         foreach (KeyValuePair<string, int> fcat in labDict)
                         {
-                            float cp = MainClass.ConditionalProbability(fcat.Value, labTotal, nWords);
+                            double cp = MainClass.ConditionalProbability(fcat.Value, labTotal, nWords);
                             labcpdict.Add(fcat.Key, cp);
                         }
 
@@ -160,7 +160,7 @@ namespace automatic_text_classification
                         string[] paths = new string[3];
 
                         var a = new Dictionary<string, int>();
-                        var b = new Dictionary<string, float>();
+                        var b = new Dictionary<string, double>();
 
                         foreach ( string government in governments)
                         {
@@ -188,8 +188,6 @@ namespace automatic_text_classification
 
                         Dictionary<string, int> fileDict = new Dictionary<string, int>();
                         MainClass.WordFrequency(pathToFile, fileDict);
-
-
 
                         //MainClass.Classification(testDict, concpdict, coacpdict, labcpdict, conPriorProbability,
                         //coaPriorProbability, labPriorProbability);

@@ -16,12 +16,12 @@ namespace automatic_text_classification
             Console.ReadLine();
         }
 
-        public static void Classification(Dictionary<string, int> testDict, Dictionary<string, float> concpdict, 
-                                          Dictionary<string, float> coacpdict, Dictionary<string, float> labcpdict, 
-                                          float conPriorProbability, float coaPriorProbability, float labPriorProbability)
+        public static void Classification(Dictionary<string, int> testDict, Dictionary<string, double> concpdict, 
+                                          Dictionary<string, double> coacpdict, Dictionary<string, double> labcpdict, 
+                                          double conPriorProbability, double coaPriorProbability, double labPriorProbability)
         {
 
-            float conProb = 0.0f, coaProb = 0.0f, labProb = 0.0f;
+            double conProb = 0D, coaProb = 0D, labProb = 0D;
 
             foreach (var word in testDict.Keys)
             {
@@ -30,36 +30,31 @@ namespace automatic_text_classification
                 if (labcpdict.ContainsKey(word)) { labProb = conProb + (labcpdict[word] * testDict[word]); }
             }
 
+            //conProb = Math.Pow(10, conProb) * conPriorProbability; //inverse of log, c# doesn't have power (^) operator, 
             conProb = conProb * conPriorProbability;
             coaProb = coaProb * coaPriorProbability;
             labProb = labProb * labPriorProbability;
-
-            var predDict = new Dictionary<string, float>
+            var predDict = new Dictionary<string, double>
                         {
                             { "Labour", labProb },
                             {"Conservative", conProb},
                             {"Coalition", coaProb}
                         };
             Console.Clear();
-            foreach (KeyValuePair<string,float> pred in predDict)
-            {
-                Console.WriteLine("Probability of {0}: {1}", pred.Key, pred.Value);
-            }
 
-            /*
-            Console.WriteLine("\nProbabiity of Conservative: " + conProb);
-            Console.WriteLine("Probabiity of Coalition: " + coaProb);
-            Console.WriteLine("Probabiity of Labour: " + labProb);
-            */
+            foreach (KeyValuePair<string,double> pred in predDict)
+            {
+                Console.WriteLine("Probability of {0}: {1:00.00}%", pred.Key, pred.Value*100); //string formating to display percentage to 2dp
+            }
 
             var best = predDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
             Console.WriteLine("---------------------");
             Console.WriteLine("This document is predicted to be " + best);
         }
 
-        public static float PriorProbabilities( string government, double fileCount, Dictionary<string, int> governmentDict) 
+        public static double PriorProbabilities( string government, double fileCount, Dictionary<string, int> governmentDict) 
         {
-            float priorProbability = governmentDict[government] / (float)fileCount;
+            double priorProbability = governmentDict[government] / (double)fileCount;
             return priorProbability;
         }
 
@@ -90,12 +85,13 @@ namespace automatic_text_classification
             return wordCount;
         }
 
-        public static float ConditionalProbability(int fcat, int ncat, int nWords)
+        public static double ConditionalProbability(int fcat, int ncat, int nWords)
         {
             //Console.WriteLine("{0},{1},{2}",fcat,ncat,nWords);
-            float top = fcat + 1;
-            float bottom = ncat + nWords;
-            float conditionalProbability = top / bottom;
+            double top = fcat + 1;
+            double bottom = ncat + nWords;
+            //double conditionalProbability = Math.Log10(top / bottom); //Taking log of probability to avoid floating-point overflow errors
+            double conditionalProbability = top / bottom;
             Console.WriteLine(conditionalProbability);
             return conditionalProbability;
         }
@@ -128,7 +124,7 @@ namespace automatic_text_classification
             return government;
         }
 
-        public static void WriteBayesianNetwork (Dictionary<string, int> dict, Dictionary<string, float> cpDict)
+        public static void WriteBayesianNetwork (Dictionary<string, int> dict, Dictionary<string, double> cpDict)
         {
             string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); //Multiplatform home environment
 
@@ -144,7 +140,7 @@ namespace automatic_text_classification
             File.WriteAllText(filePath + fileName, csv);
         }
 
-        public static void ReadBayesianNetwork(string file, Dictionary<string, int> a, Dictionary<string, float> b)
+        public static void ReadBayesianNetwork(string file, Dictionary<string, int> a, Dictionary<string, double> b)
         {
             StreamReader sr = new StreamReader(file);
             string data = Console.ReadLine();
