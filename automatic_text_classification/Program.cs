@@ -10,11 +10,15 @@ namespace automatic_text_classification
 {
     class MainClass
     {
+
         private static void Main(string[] args)
         {
             Menu display = new Menu();
             Console.ReadLine();
         }
+
+        public enum Government { Labour, Conservative, Coalition };
+        //public Government party;
 
         public static void Classification(Dictionary<string, int> testDict, Dictionary<string, double> concpdict, 
                                           Dictionary<string, double> coacpdict, Dictionary<string, double> labcpdict, 
@@ -34,22 +38,24 @@ namespace automatic_text_classification
             conProb = conProb * conPriorProbability;
             coaProb = coaProb * coaPriorProbability;
             labProb = labProb * labPriorProbability;
-            var predDict = new Dictionary<string, double>
+
+
+            var predDict = new Dictionary<object, double>
                         {
-                            { "Labour", labProb },
-                            {"Conservative", conProb},
-                            {"Coalition", coaProb}
+                            {Government.Labour, labProb },
+                            {Government.Conservative, conProb},
+                            {Government.Coalition, coaProb}
                         };
             Console.Clear();
 
-            foreach (KeyValuePair<string,double> pred in predDict)
+            foreach (KeyValuePair<object,double> pred in predDict)
             {
                 Console.WriteLine("Probability of {0}: {1:00.00}%", pred.Key, pred.Value*100); //string formating to display percentage to 2dp
             }
 
             var best = predDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
             Console.WriteLine("---------------------");
-            Console.WriteLine("This document is predicted to be " + best);
+            Console.WriteLine("This document is predicted to be " + best + "\n");
         }
 
         public static double PriorProbabilities( string government, double fileCount, Dictionary<string, int> governmentDict) 
@@ -101,26 +107,57 @@ namespace automatic_text_classification
             //get government from filename
             string government = "";
 
+            string[] parties = Enum.GetNames(typeof(Government));
+
+            int q = 0;
+
+            while (!fileName.ToLower().Contains(parties[q].ToLower())) //alot neater then if statement below
+            {
+                q++;
+            }
+
+            government = parties[q];
+
+            /*
+            foreach (string party in parties)
+            {
+                Console.WriteLine
+                if (fileName.ToLower().Contains(party.ToLower()))
+                {
+                    government = party; //As of C#6 the best way to get the name of an enum is the new nameof operator instead of .toString
+                }
+                else
+                {
+                    Console.WriteLine("Couldn't determine government\nPlease ensure all filenames of " +
+                                      "training data contain a political party");
+                    Console.ReadLine();
+                }
+            }*/
+
+            /*
             if (fileName.ToLower().Contains("conservative"))
             {
-                government = "Conservative";
+                government = nameof(Government.Conservative); //As of C#6 the best way to get the name of an enum is the new nameof operator instead of .toString
+
             }
             else if (fileName.ToLower().Contains("labour"))
             {
-                government = "Labour";
+                government = nameof(Government.Labour);
             }
-            else if (fileName.ToLower().Contains("coalition"))
+            else if (fileName.ToLower().Contains(nameof(Government.Coalition).ToLower()))
             {
-                government = "Coalition";
+                government = nameof(Government.Coalition);
             }
             else
             {
                 Console.WriteLine("Couldn't determine government\nPlease ensure filename of " +
                                   "training data contains government");
                 Console.ReadLine();
-            }
+            }*/
+
             //Console.WriteLine("Government: {0}", government);
             //Regex docGovernment = new Regex("[^a-zA-Z0-9]");
+            //Console.WriteLine(government);
             return government;
         }
 
@@ -128,7 +165,7 @@ namespace automatic_text_classification
         {
             string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); //Multiplatform home environment
 
-            Console.WriteLine("Enter file name to save Navie Bayes table to\n[Make sure to include extension '.csv']");
+            Console.WriteLine("\nEnter file name to save Navie Bayes table to\n[Make sure to include extension '.csv']");
             string fileName = Console.ReadLine();
 
             string filePath = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/";

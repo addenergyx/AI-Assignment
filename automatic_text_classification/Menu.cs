@@ -66,20 +66,23 @@ namespace automatic_text_classification
 
                             switch (government)
                             {
-                                case "Conservative":
+                                case nameof(MainClass.Government.Conservative):
                                     conTotal += wordCount; // Total number of words in each category including repeats
                                     conDict = conDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
                                     conPriorProbability = priorProbability;
                                     break;
-                                case "Coalition":
+                                case nameof(MainClass.Government.Coalition):
                                     coaTotal += wordCount;
                                     coaDict = coaDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
                                     coaPriorProbability = priorProbability;
                                     break;
-                                case "Labour":
+                                case nameof(MainClass.Government.Labour):
                                     labTotal += wordCount;
                                     labDict = labDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
                                     labPriorProbability = priorProbability;
+                                    break;
+                                default:
+                                    Console.WriteLine("Could not determine government");
                                     break;
                             }
 
@@ -162,19 +165,19 @@ namespace automatic_text_classification
                         var a = new Dictionary<string, int>();
                         var b = new Dictionary<string, double>();
 
-                        foreach ( string government in governments)
+                        foreach (MainClass.Government party in Enum.GetValues(typeof(MainClass.Government)))
                         {
-                            string pathToBayesian = PathToBayesianNetwork(government);
+                            string pathToBayesian = PathToBayesianNetwork(nameof(party));
                             MainClass.ReadBayesianNetwork(pathToBayesian, a, b);
-                            switch (government)
+                            switch (party)
                             {
-                                case "Conservative":
+                                case MainClass.Government.Conservative:
                                     conDict = a; concpdict = b;
                                     break;
-                                case "Labour":
+                                case MainClass.Government.Labour:
                                     labDict = a; labcpdict = b;
                                     break;
-                                case "Coalition":
+                                case MainClass.Government.Coalition:
                                     coaDict = a; coacpdict = b;
                                     break;
                             }
