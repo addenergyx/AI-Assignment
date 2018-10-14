@@ -69,7 +69,6 @@ namespace automatic_text_classification
                                 case "Conservative":
                                     conTotal += wordCount; // Total number of words in each category including repeats
                                     conDict = conDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-                                    //conDict.Add("Prior Probability", priorProbability); can't put double in the dictionary
                                     conPriorProbability = priorProbability;
                                     break;
                                 case "Coalition":
@@ -160,10 +159,8 @@ namespace automatic_text_classification
                         string[] governments = { "Conservative", "Labour", "Coalition" };
                         string[] paths = new string[3];
 
-                        //int j = 0;
                         var a = new Dictionary<string, int>();
                         var b = new Dictionary<string, float>();
-
 
                         foreach ( string government in governments)
                         {
