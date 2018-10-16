@@ -12,17 +12,26 @@ namespace automatic_text_classification
     {
 
         const int exit = 0;
-        string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); //Multiplatform home environment
+        readonly string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); //Multiplatform home environment, made readonly so can't be modified
 
         public Menu()
         {
-            int labTotal = 0, conTotal = 0, coaTotal = 0, wordCount = 0;
-            double conPriorProbability = 0D, coaPriorProbability = 0D, labPriorProbability = 0D;
+
             int answer = 3;
 
             do
             {
                 answer = DisplayMenu();
+                var governmentDict = new Dictionary<string, int>();
+                Dictionary<string, int> uniqueDict = new Dictionary<string, int>();
+                Dictionary<string, int> labDict = new Dictionary<string, int>();
+                Dictionary<string, int> coaDict = new Dictionary<string, int>();
+                Dictionary<string, int> conDict = new Dictionary<string, int>();
+                var concpdict = new Dictionary<string, double>();
+                var coacpdict = new Dictionary<string, double>();
+                var labcpdict = new Dictionary<string, double>();
+                int labTotal = 0, conTotal = 0, coaTotal = 0, wordCount = 0, nWords = 0, fileCount = 0;
+                double conPriorProbability = 0D, coaPriorProbability = 0D, labPriorProbability = 0D, priorProbability = 0D;
                 switch (answer)
                 {
                     case 1:
@@ -37,16 +46,10 @@ namespace automatic_text_classification
                             pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
                         }
 
-                        double fileCount = Directory.GetFiles(pathToDir, "*.*", SearchOption.TopDirectoryOnly).Length;
+                        fileCount = Directory.GetFiles(pathToDir, "*.*", SearchOption.TopDirectoryOnly).Length;
                         Console.WriteLine("Training data: " + fileCount);
 
                         string[] files = Directory.GetFiles(pathToDir);
-
-                        var governmentDict = new Dictionary<string, int>();
-                        Dictionary<string, int> uniqueDict = new Dictionary<string, int>();
-                        Dictionary<string, int> labDict = new Dictionary<string, int>();
-                        Dictionary<string, int> coaDict = new Dictionary<string, int>();
-                        Dictionary<string, int> conDict = new Dictionary<string, int>();
 
                         foreach (string file in files)
                         {
@@ -58,7 +61,7 @@ namespace automatic_text_classification
                         foreach (string file in files)
                         {
                             string government = MainClass.DocGovernment(file);
-                            double priorProbability = MainClass.PriorProbabilities(government, fileCount, governmentDict);
+                            priorProbability = MainClass.PriorProbabilities(government, fileCount, governmentDict);
      
                             // key-value pair word frequency
                             var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as as think case-sensitivity will have little/no impact on accuracy of algorithm
@@ -103,14 +106,11 @@ namespace automatic_text_classification
                             //Unique words over all training data
                             uniqueDict = uniqueDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
 
-
                         }
 
-                        int nWords = uniqueDict.Count(); //Total number of unique words throughout training documents
+                        nWords = uniqueDict.Count(); //Total number of unique words throughout training documents
 
-                        var concpdict = new Dictionary<string, double>();
-                        var coacpdict = new Dictionary<string, double>();
-                        var labcpdict = new Dictionary<string, double>();
+
 
                         foreach (KeyValuePair<string, int> fcat in conDict)
                         {
@@ -146,9 +146,13 @@ namespace automatic_text_classification
                         MainClass.Classification(testDict, concpdict, coacpdict, labcpdict, conPriorProbability,
                                                  coaPriorProbability, labPriorProbability);
 
-                        MainClass.WriteBayesianNetwork (conDict, concpdict);
-                        MainClass.WriteBayesianNetwork (coaDict, coacpdict);
-                        MainClass.WriteBayesianNetwork (labDict, labcpdict);
+                        string save = AskForInfoString("Do you wish to save to csv?");
+                        if (save.ToLower().Equals('y') || save.ToLower().Equals("yes"))
+                        {
+                            MainClass.WriteBayesianNetwork(conDict, concpdict, MainClass.Government.Conservative);
+                            MainClass.WriteBayesianNetwork(coaDict, coacpdict, MainClass.Government.Coalition);
+                            MainClass.WriteBayesianNetwork(labDict, labcpdict, MainClass.Government.Labour);
+                        }
 
                         AnykeyToContinue();
                         Console.Clear();
@@ -162,12 +166,13 @@ namespace automatic_text_classification
                         string[] governments = { "Conservative", "Labour", "Coalition" };
                         string[] paths = new string[3];
 
-                        var a = new Dictionary<string, int>();
-                        var b = new Dictionary<string, double>();
 
                         foreach (MainClass.Government party in Enum.GetValues(typeof(MainClass.Government)))
                         {
-                            string pathToBayesian = PathToBayesianNetwork(nameof(party));
+                            var a = new Dictionary<string, int>();
+                            var b = new Dictionary<string, double>();
+
+                            string pathToBayesian = PathToBayesianNetwork(party.ToString());
                             MainClass.ReadBayesianNetwork(pathToBayesian, a, b);
                             switch (party)
                             {
@@ -181,7 +186,36 @@ namespace automatic_text_classification
                                     coaDict = a; coacpdict = b;
                                     break;
                             }
+
+                            uniqueDict = uniqueDict.Union(a).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
+                            int govfilecount = AskForInfoInt("Number of "+party.ToString()+ " documents in test dataset: ");
+                            governmentDict.Add(party.ToString(), govfilecount);
                         }
+
+                        fileCount = governmentDict.Sum(x => x.Value);
+
+                        foreach (var pair in governmentDict)
+                        {
+                            priorProbability = MainClass.PriorProbabilities(pair.Key,fileCount,governmentDict);
+
+                            switch (pair.Key)
+                            {
+                                case nameof(MainClass.Government.Conservative):
+                                    conPriorProbability = priorProbability;
+                                    break;
+                                case nameof(MainClass.Government.Coalition):
+                                    coaPriorProbability = priorProbability;
+                                    break;
+                                case nameof(MainClass.Government.Labour):
+                                    labPriorProbability = priorProbability;
+                                    break;
+                                default:
+                                    Console.WriteLine("Could not determine government");
+                                    break;
+                            }
+                        }
+                        
+                        nWords = uniqueDict.Count(); //Total number of unique words throughout training documents
 
                         while (!File.Exists(pathToFile))
                         {
@@ -192,8 +226,7 @@ namespace automatic_text_classification
                         Dictionary<string, int> fileDict = new Dictionary<string, int>();
                         MainClass.WordFrequency(pathToFile, fileDict);
 
-                        //MainClass.Classification(testDict, concpdict, coacpdict, labcpdict, conPriorProbability,
-                        //coaPriorProbability, labPriorProbability);
+                        MainClass.Classification(fileDict, concpdict, coacpdict, labcpdict, conPriorProbability, coaPriorProbability, labPriorProbability);
                         AnykeyToContinue();
                         Console.Clear();
                         break;
@@ -224,6 +257,7 @@ namespace automatic_text_classification
             Console.WriteLine("(2) Undertake a Classification");
             Console.WriteLine("(0) Quit");
 
+
             string userInput = Console.ReadLine();
             validInput = Int32.TryParse(userInput, out int result);
 
@@ -233,7 +267,7 @@ namespace automatic_text_classification
                 userInput = Console.ReadLine(); 
                 validInput = Int32.TryParse(userInput, out result); 
             }
-           
+
             return result;
         }
 
@@ -272,6 +306,22 @@ namespace automatic_text_classification
             userInput = Console.ReadLine().Trim();
 
             return userInput;
+        }
+
+        int AskForInfoInt(string message)
+        {
+            bool validInput;
+            Console.Write(message);
+            string userInput = Console.ReadLine();
+
+            validInput = Int32.TryParse(userInput, out int result);
+            while (!validInput)
+            {
+                Console.Write(message);
+                userInput = Console.ReadLine();
+                validInput = Int32.TryParse(userInput, out result);
+            }
+            return result;
         }
     }
 }

@@ -5,6 +5,8 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.VisualBasic;
+
 
 namespace automatic_text_classification
 {
@@ -58,7 +60,7 @@ namespace automatic_text_classification
             Console.WriteLine("This document is predicted to be " + best + "\n");
         }
 
-        public static double PriorProbabilities( string government, double fileCount, Dictionary<string, int> governmentDict) 
+        public static double PriorProbabilities( string government, int fileCount, Dictionary<string, int> governmentDict) 
         {
             double priorProbability = governmentDict[government] / (double)fileCount;
             return priorProbability;
@@ -132,9 +134,9 @@ namespace automatic_text_classification
                                       "training data contain a political party");
                     Console.ReadLine();
                 }
-            }*/
+            }
 
-            /*
+
             if (fileName.ToLower().Contains("conservative"))
             {
                 government = nameof(Government.Conservative); //As of C#6 the best way to get the name of an enum is the new nameof operator instead of .toString
@@ -161,42 +163,47 @@ namespace automatic_text_classification
             return government;
         }
 
-        public static void WriteBayesianNetwork (Dictionary<string, int> dict, Dictionary<string, double> cpDict)
+        public static void WriteBayesianNetwork (Dictionary<string, int> dict, Dictionary<string, double> cpDict, object government)
         {
             string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); //Multiplatform home environment
 
-            Console.WriteLine("\nEnter file name to save Navie Bayes table to\n[Make sure to include extension '.csv']");
+            Console.WriteLine("\nEnter file name to save Navie Bayes table for category {0}\n[Current location: {1}]\n[Make sure to include extension '.csv']", government,home);
             string fileName = Console.ReadLine();
 
-            string filePath = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/";
+            //string filePath = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/";
 
             String csv = String.Join(
                 Environment.NewLine,
                 dict.Select(d => d.Key + "," + d.Value + "," + cpDict[d.Key])
             );
-            File.WriteAllText(filePath + fileName, csv);
+            File.WriteAllText( home + fileName, csv);
         }
 
         public static void ReadBayesianNetwork(string file, Dictionary<string, int> a, Dictionary<string, double> b)
         {
             StreamReader sr = new StreamReader(file);
-            string data = Console.ReadLine();
+            string data = sr.ReadLine();
 
-            while (data != null)
-            {
-                Console.WriteLine(data);
-                Console.ReadLine();
-                string[] values = data.Split(',');
-                string word = values[0];
-                int frequency = Int32.Parse(values[1]);
-                float conditionalprobability = Int32.Parse(values[2]);
+                while (!sr.EndOfStream)
+                {
+                    Console.WriteLine(data);
+                    data = sr.ReadLine();
+                    string[] values = data.Split(',');
+                    Console.WriteLine(values[0]);
+                    Console.WriteLine(values[1]);
+                    Console.WriteLine(values[2]);
 
-                a.Add(word, frequency);
-                b.Add(word, conditionalprobability);
-            }
+                    string word = values[0];
+                    int frequency = Int32.Parse(values[1]);
+                    double conditionalprobability = Double.Parse(values[2]);
 
-            //var dict = File.ReadLines(file).Select(line => line.Split(',')).ToDictionary(line => line[0], line => line[1]);
-            //var bndict = new Dictionary<string, Dictionary<int, float>>();
+                    a.Add(word, frequency);
+                    b.Add(word, conditionalprobability);
+                }
+
+                //var dict = File.ReadLines(file).Select(line => line.Split(',')).ToDictionary(line => line[0], line => line[1]);
+                //var bndict = new Dictionary<string, Dictionary<int, float>>();
+
 
 
         }
