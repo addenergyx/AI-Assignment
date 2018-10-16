@@ -21,6 +21,7 @@ namespace automatic_text_classification
 
             do
             {
+                //By having variable initalization before switch statement but inside loop ensures variables are reset each time user is choosing between a) undertake  training or b) undertake a classification.  
                 answer = DisplayMenu();
                 var governmentDict = new Dictionary<string, int>();
                 Dictionary<string, int> uniqueDict = new Dictionary<string, int>();
@@ -32,18 +33,25 @@ namespace automatic_text_classification
                 var labcpdict = new Dictionary<string, double>();
                 int labTotal = 0, conTotal = 0, coaTotal = 0, wordCount = 0, nWords = 0, fileCount = 0;
                 double conPriorProbability = 0D, coaPriorProbability = 0D, labPriorProbability = 0D, priorProbability = 0D;
+                string stopWordsFile;
                 switch (answer)
                 {
                     case 1:
                         Console.Clear();
                         Title();
                         string pathToDir = PathToDirectory(); //path to directory containing training data
-
                         while (!Directory.Exists(pathToDir)) //throw new ArgumentException("File doesn't exist, enter new path")
                         {
                             Console.WriteLine("Path does not exist!!! Please enter full path to training data directory");
                             pathToDir = Console.ReadLine().Trim(); 
                             pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
+                        }
+
+                        stopWordsFile = PathToStopWords();
+                        while (!File.Exists(stopWordsFile)) //throw new ArgumentException("File doesn't exist, enter new path")
+                        {
+                            Console.WriteLine("Can not find file!!! Please enter full path to stop words file");
+                            stopWordsFile = Console.ReadLine().Trim();
                         }
 
                         fileCount = Directory.GetFiles(pathToDir, "*.*", SearchOption.TopDirectoryOnly).Length;
@@ -64,8 +72,8 @@ namespace automatic_text_classification
                             priorProbability = MainClass.PriorProbabilities(government, fileCount, governmentDict);
      
                             // key-value pair word frequency
-                            var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as as think case-sensitivity will have little/no impact on accuracy of algorithm
-                            wordCount = MainClass.WordFrequency(file, dict);
+                            var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as I think case-sensitivity will have little/no impact on accuracy of algorithm could compare results at some point
+                            wordCount = MainClass.WordFrequency(file, dict, stopWordsFile);
 
                             switch (government)
                             {
@@ -110,7 +118,15 @@ namespace automatic_text_classification
 
                         nWords = uniqueDict.Count(); //Total number of unique words throughout training documents
 
-
+                        //After talk in class realised need to keep words that don't appear in a category and set value to 0
+                        //To get cat[word] = 0 for words not in a category need to comapre uniqueDict to (category)Dict
+                        foreach (KeyValuePair<string, int> word in uniqueDict)
+                        {
+                            //Expert system technique, for each word all conditions are triggered but only fired if false
+                            if (!coaDict.ContainsKey(word.Key)) { coaDict.Add(word.Key, 0); }
+                            if (!labDict.ContainsKey(word.Key)) { labDict.Add(word.Key, 0); }
+                            if (!conDict.ContainsKey(word.Key)) { conDict.Add(word.Key, 0); }
+                        }
 
                         foreach (KeyValuePair<string, int> fcat in conDict)
                         {
@@ -129,9 +145,6 @@ namespace automatic_text_classification
                             labcpdict.Add(fcat.Key, cp);
                         }
 
-                        //Tables
-                        //condict and concpdict
-
                         string pathToTest = PathToTestDocument();
 
                         while (!File.Exists(pathToTest)) 
@@ -142,12 +155,12 @@ namespace automatic_text_classification
                         }
 
                         Dictionary < string, int> testDict = new Dictionary<string, int>();
-                        MainClass.WordFrequency(pathToTest, testDict);
+                        MainClass.WordFrequency(pathToTest, testDict, stopWordsFile);
                         MainClass.Classification(testDict, concpdict, coacpdict, labcpdict, conPriorProbability,
                                                  coaPriorProbability, labPriorProbability);
 
                         string save = AskForInfoString("Do you wish to save to csv?");
-                        if (save.ToLower().Equals('y') || save.ToLower().Equals("yes"))
+                        if (save.ToLower().Equals('y') || save.ToLower().Equals("yes")) //'y' is not working
                         {
                             MainClass.WriteBayesianNetwork(conDict, concpdict, MainClass.Government.Conservative);
                             MainClass.WriteBayesianNetwork(coaDict, coacpdict, MainClass.Government.Coalition);
@@ -160,12 +173,15 @@ namespace automatic_text_classification
 
                     case 2:
                         Console.Clear();
+                        Title();
                         string pathToFile = PathToTestDocument();
+                        stopWordsFile = PathToStopWords();
+
                         //Dictionary<string, string> govPathDict = new Dictionary<string, string>();
 
-                        string[] governments = { "Conservative", "Labour", "Coalition" };
-                        string[] paths = new string[3];
-
+                        //Replaced with enum
+                        //string[] governments = { "Conservative", "Labour", "Coalition" };
+                        //string[] paths = new string[3];
 
                         foreach (MainClass.Government party in Enum.GetValues(typeof(MainClass.Government)))
                         {
@@ -190,6 +206,14 @@ namespace automatic_text_classification
                             uniqueDict = uniqueDict.Union(a).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
                             int govfilecount = AskForInfoInt("Number of "+party.ToString()+ " documents in test dataset: ");
                             governmentDict.Add(party.ToString(), govfilecount);
+                        }
+
+                        foreach (KeyValuePair<string, int> word in uniqueDict)
+                        {
+                            //Expert system technique, for each word all conditions are triggered but only fired if false
+                            if (!coaDict.ContainsKey(word.Key)) { coaDict.Add(word.Key, 0); }
+                            if (!labDict.ContainsKey(word.Key)) { labDict.Add(word.Key, 0); }
+                            if (!conDict.ContainsKey(word.Key)) { conDict.Add(word.Key, 0); }
                         }
 
                         fileCount = governmentDict.Sum(x => x.Value);
@@ -224,7 +248,7 @@ namespace automatic_text_classification
                         }
 
                         Dictionary<string, int> fileDict = new Dictionary<string, int>();
-                        MainClass.WordFrequency(pathToFile, fileDict);
+                        MainClass.WordFrequency(pathToFile, fileDict, stopWordsFile);
 
                         MainClass.Classification(fileDict, concpdict, coacpdict, labcpdict, conPriorProbability, coaPriorProbability, labPriorProbability);
                         AnykeyToContinue();
@@ -279,6 +303,11 @@ namespace automatic_text_classification
         private string PathToTestDocument()
         {
             return AskForInfoString("Please enter full path to test document");
+        }
+
+        private string PathToStopWords()
+        {
+            return AskForInfoString("Please enter full path to stop words file");
         }
 
         private string PathToBayesianNetwork(string government)

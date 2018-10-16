@@ -67,10 +67,10 @@ namespace automatic_text_classification
         }
 
         //Count the frequency of each unique word.  
-        public static int WordFrequency(string file, Dictionary<string, int> words)
+        public static int WordFrequency(string file, Dictionary<string, int> words, string stopWordsFile)
         {
             var document = File.ReadAllText(file).ToLower(); //Change file to lower case
-            string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
+            //string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
             StreamReader sr = new StreamReader(stopWordsFile);
             string stopWordsText = File.ReadAllText(stopWordsFile);
             //Console.ReadLine();
