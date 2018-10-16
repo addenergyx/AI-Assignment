@@ -37,14 +37,13 @@ namespace automatic_text_classification
                 switch (answer)
                 {
                     case 1:
-                        Console.Clear();
                         Title();
                         string pathToDir = PathToDirectory(); //path to directory containing training data
                         while (!Directory.Exists(pathToDir)) //throw new ArgumentException("File doesn't exist, enter new path")
                         {
                             Console.WriteLine("Path does not exist!!! Please enter full path to training data directory");
                             pathToDir = Console.ReadLine().Trim(); 
-                            pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
+                            //pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
                         }
 
                         stopWordsFile = PathToStopWords();
@@ -151,7 +150,7 @@ namespace automatic_text_classification
                         {
                             Console.WriteLine("File does not exist!!! Please enter full path to test document");
                             pathToTest = Console.ReadLine().Trim(); 
-                            pathToTest = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/test1.txt";
+                            //pathToTest = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/test1.txt";
                         }
 
                         Dictionary < string, int> testDict = new Dictionary<string, int>();
@@ -172,9 +171,15 @@ namespace automatic_text_classification
                         break;
 
                     case 2:
-                        Console.Clear();
                         Title();
+
                         string pathToFile = PathToTestDocument();
+                        while (!File.Exists(pathToFile))
+                        {
+                            Console.WriteLine("File does not exist!!! Please enter full path to test document");
+                            pathToFile = Console.ReadLine().Trim();
+                        }
+
                         stopWordsFile = PathToStopWords();
 
                         //Dictionary<string, string> govPathDict = new Dictionary<string, string>();
@@ -240,12 +245,6 @@ namespace automatic_text_classification
                         }
                         
                         nWords = uniqueDict.Count(); //Total number of unique words throughout training documents
-
-                        while (!File.Exists(pathToFile))
-                        {
-                            Console.WriteLine("File does not exist!!! Please enter full path to test document");
-                            pathToFile = Console.ReadLine().Trim();
-                        }
 
                         Dictionary<string, int> fileDict = new Dictionary<string, int>();
                         MainClass.WordFrequency(pathToFile, fileDict, stopWordsFile);

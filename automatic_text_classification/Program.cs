@@ -48,14 +48,14 @@ namespace automatic_text_classification
                             {Government.Conservative, conProb},
                             {Government.Coalition, coaProb}
                         };
-            Console.Clear();
 
+            Console.Clear();
             foreach (KeyValuePair<object,double> pred in predDict)
             {
                 Console.WriteLine("Probability of {0}: {1:00.00}%", pred.Key, pred.Value*100); //string formating to display percentage to 2dp
             }
 
-            var best = predDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
+            var best = predDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key; //selects key with highest value by comparing
             Console.WriteLine("---------------------");
             Console.WriteLine("This document is predicted to be " + best + "\n");
         }
@@ -69,13 +69,15 @@ namespace automatic_text_classification
         //Count the frequency of each unique word.  
         public static int WordFrequency(string file, Dictionary<string, int> words, string stopWordsFile)
         {
-            var document = File.ReadAllText(file).ToLower(); //Change file to lower case
+
             //string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
             StreamReader sr = new StreamReader(stopWordsFile);
             string stopWordsText = File.ReadAllText(stopWordsFile);
             //Console.ReadLine();
 
             var stopWords = stopWordsText.Split();
+
+            var document = File.ReadAllText(file).ToLower(); //Change file to lower case
 
             foreach (var word in stopWords) { document = Regex.Replace(document, "\\b"+word+"\\b", ""); }
 
@@ -100,7 +102,7 @@ namespace automatic_text_classification
             double bottom = ncat + nWords;
             //double conditionalProbability = Math.Log10(top / bottom); //Taking log of probability to avoid floating-point overflow errors
             double conditionalProbability = top / bottom;
-            Console.WriteLine(conditionalProbability);
+            //Console.WriteLine(conditionalProbability);
             return conditionalProbability;
         }
 
@@ -113,7 +115,7 @@ namespace automatic_text_classification
 
             int q = 0;
 
-            while (!fileName.ToLower().Contains(parties[q].ToLower())) //alot neater then if statement below
+            while (!fileName.ToLower().Contains(parties[q].ToLower())) //alot neater than if statement below
             {
                 q++;
             }
@@ -181,8 +183,9 @@ namespace automatic_text_classification
 
         public static void ReadBayesianNetwork(string file, Dictionary<string, int> a, Dictionary<string, double> b)
         {
-            StreamReader sr = new StreamReader(file);
-            string data = sr.ReadLine();
+            using (StreamReader sr = new StreamReader(file))
+            {
+                string data = sr.ReadLine();
 
                 while (!sr.EndOfStream)
                 {
@@ -200,7 +203,7 @@ namespace automatic_text_classification
                     a.Add(word, frequency);
                     b.Add(word, conditionalprobability);
                 }
-
+            }
                 //var dict = File.ReadLines(file).Select(line => line.Split(',')).ToDictionary(line => line[0], line => line[1]);
                 //var bndict = new Dictionary<string, Dictionary<int, float>>();
 
