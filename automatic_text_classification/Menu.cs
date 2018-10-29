@@ -262,6 +262,8 @@ namespace automatic_text_classification
                         break;
 
                     case 3:
+
+                        /*
                         Title();
 
                         //First work out term frequency in category - have a dictionary of word and frequency
@@ -334,11 +336,6 @@ namespace automatic_text_classification
                                 }
                             }
 
-
-
-
-
-
                             if (MainClass.DocGovernment(fileName) == MainClass.Government.Coalition.ToString())
                             {
                                 foreach (var word in fileDict)
@@ -392,6 +389,7 @@ namespace automatic_text_classification
 
                         //Term inverse document requency - number of documents in a category that word appears in
                         // log(number of doc in category/no of doc with that term)
+                        */
 
                         break;
 
