@@ -161,8 +161,8 @@ namespace automatic_text_classification
                         MainClass.Classification(testDict, concpdict, coacpdict, labcpdict, conPriorProbability,
                                                  coaPriorProbability, labPriorProbability);
 
-                        string save = AskForInfoString("Do you wish to save to csv?");
-                        if (save.ToLower().Equals('y') || save.ToLower().Equals("yes")) //'y' is not working
+                        string save = AskForInfoString("Do you wish to save to csv? [Y/N]");
+                        if (save.ToLower().Trim().Equals("y") || save.ToLower().Trim().Equals("yes")) //'y' is not working
                         {
                             MainClass.WriteBayesianNetwork(conDict, concpdict, MainClass.Government.Conservative);
                             MainClass.WriteBayesianNetwork(coaDict, coacpdict, MainClass.Government.Coalition);
