@@ -85,6 +85,14 @@ namespace automatic_text_classification
 
             int wordCount = document.Split(' ').Length; //Total number of words in each doc including repeats. This method of counting words takes a considerable amount of time
 
+            //stemming document
+            var regex = new Regex(@"\b[\s,\.\-:;]*");
+            foreach (string word in regex.Split(document).Where(x => !string.IsNullOrEmpty(x)))
+            {
+                document = Regex.Replace(document, word, Stemming(word));
+            }            
+            //foreach (string word in document.Split(' ')) { document = Regex.Replace(document, word, Stemming(word)); }
+
             var wordPattern = new Regex(@"\w+"); // \w+ matches any word character plus 1, this should account for apostrophes as I think these can affect algorithm performance
 
             foreach (Match match in wordPattern.Matches(document))
@@ -209,8 +217,6 @@ namespace automatic_text_classification
                 //var dict = File.ReadLines(file).Select(line => line.Split(',')).ToDictionary(line => line[0], line => line[1]);
                 //var bndict = new Dictionary<string, Dictionary<int, float>>();
 
-
-
         }
 
         public static string Stemming(string word)
@@ -246,16 +252,16 @@ namespace automatic_text_classification
             //step 1a
             if (word.EndsWith("s", StringComparison.CurrentCultureIgnoreCase))
             {
-                if (word.EndsWith("sses", StringComparison.CurrentCultureIgnoreCase)) { Regex.Replace(word, "sses$", "es"); }
+                if (word.EndsWith("sses", StringComparison.CurrentCultureIgnoreCase)) { word = Regex.Replace(word, "sses$", "es"); }
                 //if (word.EndsWith("ies", StringComparison.CurrentCultureIgnoreCase)) { Regex.Replace(word, "ies$", "y"); }
 
                 if (word.EndsWith("ies", StringComparison.CurrentCultureIgnoreCase) || word.EndsWith("ied", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    if (Regex.IsMatch(word, @"^[a-z]ie[sd]")) { Regex.Replace(word, ".$", ""); }
-                    else { Regex.Replace(word, @"ie[sd]$", "y"); }
+                    if (Regex.IsMatch(word, @"^[a-z]ie[sd]")) { word = Regex.Replace(word, ".$", ""); }
+                    else { word = Regex.Replace(word, @"ie[sd]$", "y"); }
                 }
 
-                if (Regex.IsMatch(word, @"([aeiouy][a-r][t-z])s$")) //delete s if preceding word part contains a vowel not immediately before the s
+                if (Regex.IsMatch(word, @"[^aeiou]s$")) //delete s if preceding word part contains a vowel not immediately before the s
                 {
                     word = Regex.Replace(word, "s$", "");
                 }
@@ -263,7 +269,7 @@ namespace automatic_text_classification
             }
 
             //step 1b
-            if (Regex.IsMatch(word, @"ee.*[dly]$")) { Regex.Replace(word, @"[l]?[dy]$", ""); }
+            if (Regex.IsMatch(word, @"ee.*[dly]$")) { word = Regex.Replace(word, @"[l]?[dy]$", ""); }
 
             if(Regex.IsMatch(word, @"(ed|edly|ingly|ing)$"))
             {
@@ -271,7 +277,7 @@ namespace automatic_text_classification
                 { 
                     Regex.Replace(word, @"(ed|edly|ingly|ing)$", "");
                     if (Regex.IsMatch(word, @"(at|bl|iz)$")) { word += "e"; }//append 'e' to word
-                    else if (Regex.IsMatch(word, @"(.)\1$")) { Regex.Replace(word, @".$", ""); }
+                    else if (Regex.IsMatch(word, @"(.)\1$")) { word = Regex.Replace(word, @".$", ""); }
                     else if (word.Length < 4) { word += "e"; }
                 }
             }
@@ -279,23 +285,23 @@ namespace automatic_text_classification
             //if (word.EndsWith("ed") || word.EndsWith("edly") || word.EndsWith("ing") || word.EndsWith("ingly"))
 
             //step 1c
-            if (Regex.IsMatch(word, @"[^aeiouy]y$")) { Regex.Replace(word, @"y$", "i"); }
+            if (Regex.IsMatch(word, @"[^aeiouy]y$")) { word = Regex.Replace(word, @"y$", "i"); }
 
             //step 2
-            if (word.EndsWith("tional")) { Regex.Replace(word, @"tional$", "tion"); }
-            else if (word.EndsWith("enci")) { Regex.Replace(word, @"enci$", "ence"); }
-            else if (word.EndsWith("anci")) { Regex.Replace(word, @"anci$","ance"); }
-            else if (word.EndsWith("abli")) { Regex.Replace(word,@"abli$","able"); }
-            else if (word.EndsWith("entli")) { Regex.Replace(word,@"entli$", "ent"); }
-            else if (word.EndsWith("iser") || word.EndsWith("isation")) { Regex.Replace(word,@"(iser|isation)$","ize"); }
-            else if (word.EndsWith("ational") || word.EndsWith("ation") || word.EndsWith("ator")) { Regex.Replace(word, @"(ational|ation|ator)$", "ate"); }
-            else if (word.EndsWith("alism") || word.EndsWith("aliti") || word.EndsWith("alli")) { Regex.Replace(word, @"(alism|aliti|alli)$", "al"); }
-            else if (word.EndsWith("fulness")) { Regex.Replace(word, @"(fulness)$", "ful"); }
-            else if (word.EndsWith("ousli") || word.EndsWith("ousness")) { Regex.Replace(word, @"(ousli|ousness)$", "ous"); }
-            else if (word.EndsWith("iveness") || word.EndsWith("iviti")) { Regex.Replace(word, @"(iveness|iviti)$", "ive"); }
-            else if (word.EndsWith("biliti") || word.EndsWith("bli")) { Regex.Replace(word, @"(biliti|bli)$", "ble"); }
-            else if (Regex.IsMatch(word, @"logi$")) { Regex.Replace(word, @"logi$", "og"); }
-            else if (word.EndsWith("lessli")) { Regex.Replace(word, @"lessli$", "less"); }
+            if (word.EndsWith("tional")) { word = Regex.Replace(word, @"tional$", "tion"); }
+            else if (word.EndsWith("enci")) { word = Regex.Replace(word, @"enci$", "ence"); }
+            else if (word.EndsWith("anci")) { word = Regex.Replace(word, @"anci$","ance"); }
+            else if (word.EndsWith("abli")) { word = Regex.Replace(word,@"abli$","able"); }
+            else if (word.EndsWith("entli")) { word = Regex.Replace(word,@"entli$", "ent"); }
+            else if (word.EndsWith("iser") || word.EndsWith("isation")) { word = Regex.Replace(word,@"(iser|isation)$","ize"); }
+            else if (word.EndsWith("ational") || word.EndsWith("ation") || word.EndsWith("ator")) { word = Regex.Replace(word, @"(ational|ation|ator)$", "ate"); }
+            else if (word.EndsWith("alism") || word.EndsWith("aliti") || word.EndsWith("alli")) { word = Regex.Replace(word, @"(alism|aliti|alli)$", "al"); }
+            else if (word.EndsWith("fulness")) { word = Regex.Replace(word, @"(fulness)$", "ful"); }
+            else if (word.EndsWith("ousli") || word.EndsWith("ousness")) { word = Regex.Replace(word, @"(ousli|ousness)$", "ous"); }
+            else if (word.EndsWith("iveness") || word.EndsWith("iviti")) { word = Regex.Replace(word, @"(iveness|iviti)$", "ive"); }
+            else if (word.EndsWith("biliti") || word.EndsWith("bli")) { word = Regex.Replace(word, @"(biliti|bli)$", "ble"); }
+            else if (Regex.IsMatch(word, @"logi$")) { word = Regex.Replace(word, @"logi$", "og"); }
+            else if (word.EndsWith("lessli")) { word = Regex.Replace(word, @"lessli$", "less"); }
 
             return word;
         }
