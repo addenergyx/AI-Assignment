@@ -2,7 +2,6 @@
 using System.IO;
 using System.Text.RegularExpressions;
 
-
 namespace automatic_text_classification
 {
     public static class Doc
