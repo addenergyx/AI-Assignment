@@ -81,7 +81,7 @@ namespace automatic_text_classification
             int wordCount = document.Split(' ').Length; //Total number of words in each doc including repeats. This method of counting words takes a considerable amount of time
 
             //stemming document
-            var regex = new Regex(@"\b[\s,\.\-:;]*");
+            var regex = new Regex(@"\b[\s,\.\-:;\(\)]*"); //ignore punctuation
             foreach (string word in regex.Split(document).Where(x => !string.IsNullOrEmpty(x)))
             {
                 document = Regex.Replace(document, word, Doc.Stemming(word));
