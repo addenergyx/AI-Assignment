@@ -48,8 +48,9 @@ namespace automatic_text_classification
                         while (!Directory.Exists(pathToDir)) //throw new ArgumentException("File doesn't exist, enter new path")
                         {
                             Console.WriteLine("Path does not exist!!! Please enter full path to training data directory");
-                            pathToDir = Console.ReadLine().Trim(); 
-                            pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
+                            pathToDir = Console.ReadLine().Trim();
+                            //pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
+                            pathToDir = "training_dataset"; //gets file from debug/bin - for testing purposes at the moment
                         }
 
                         stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words file"); //Stopwords lookup table
@@ -178,7 +179,7 @@ namespace automatic_text_classification
                             var a = new Dictionary<string, int>();
                             var b = new Dictionary<string, double>();
 
-                            string pathToBayesian = PathToBayesianNetwork(party.ToString());
+                            string pathToBayesian = Doc.FileExists(PathToBayesianNetwork(party.ToString()), party.ToString() + " bayesian network");
                             BayesianNetwork.ReadBayesianNetwork(pathToBayesian, a, b);
                             switch (party)
                             {
@@ -300,6 +301,14 @@ namespace automatic_text_classification
 
                         break;
 
+                    case 4:
+                        Title();
+                        Console.WriteLine("All files needed for this program can be found in bin/debug. Therefore to use these files just need to " +
+                                          "enter path after bin/debug/. For example to use test1.txt just enter \"test_dataset/test1.txt\". " +
+                                          "To use your own files such as stopwords or bayesian network must enter full path to file when prompted");
+                        Console.ReadLine();
+                        break;
+
                     case 0:
                         Console.WriteLine("\nExiting program... ");
                         answer = exit;
@@ -324,6 +333,7 @@ namespace automatic_text_classification
             Console.WriteLine("(1) Undertake Training");
             Console.WriteLine("(2) Undertake a Classification using word frequency");
             Console.WriteLine("(3) Undertake a Classification using TF-IDF");
+            Console.WriteLine("(4) ReadMe");
             Console.WriteLine("(0) Quit");
 
             string userInput = Console.ReadLine();
