@@ -303,8 +303,8 @@ namespace automatic_text_classification
 
                     case 4:
                         Title();
-                        Console.WriteLine("All files needed for this program can be found in bin/debug. Therefore to use these files just need to " +
-                                          "enter path after bin/debug/. For example to use test1.txt just enter \"test_dataset/test1.txt\". " +
+                        Console.WriteLine("All files needed for this program can be found in bin/debug. Therefore to use these files just " +
+                                          "enter file path after bin/debug/. For example to use test1.txt just enter \"test_dataset/test1.txt\". " +
                                           "To use your own files such as stopwords or bayesian network must enter full path to file when prompted");
                         Console.ReadLine();
                         break;
@@ -341,7 +341,7 @@ namespace automatic_text_classification
 
             while (!validInput)
             { 
-                Console.WriteLine("Invalid Input, Enter either (0),(1),(2),(3)"); 
+                Console.WriteLine("Invalid Input, Enter either (0),(1),(2),(3),(4)"); 
                 userInput = Console.ReadLine(); 
                 validInput = Int32.TryParse(userInput, out result); 
             }

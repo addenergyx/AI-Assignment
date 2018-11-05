@@ -70,13 +70,15 @@ namespace automatic_text_classification
             //string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
             StreamReader sr = new StreamReader(stopWordsFile);
             string stopWordsText = File.ReadAllText(stopWordsFile);
-            //Console.ReadLine();
 
             var stopWords = stopWordsText.Split();
 
             var document = File.ReadAllText(file).ToLower(); //Change file to lower case
 
             foreach (var word in stopWords) { document = Regex.Replace(document, "\\b" + word + "\\b", ""); }
+
+            //removing stopwords messes with the whitespacing of the text
+            document = Regex.Replace(document, @"\s+", " "); //replaces multiple spaces with one, needed for word families
 
             int wordCount = document.Split(' ').Length; //Total number of words in each doc including repeats. This method of counting words takes a considerable amount of time
 
@@ -95,6 +97,44 @@ namespace automatic_text_classification
                 words.TryGetValue(match.Value, out int currentCount);
                 currentCount++;
                 words[match.Value] = currentCount;
+            }
+
+            //Using n-grams - word families
+            List<string> wordFamilies = new List<string>();
+
+            //https://stackoverflow.com/questions/6695327/need-c-sharp-regex-to-get-pairs-of-words-in-a-sentence
+            Regex wordPairRegex = new Regex(
+    @"(     # Match and capture in backreference no. 1:
+     \w+    # one or more alphanumeric characters
+     \s+    # one or more whitespace characters.
+    )       # End of capturing group 1.
+    (?=     # Assert that there follows...
+     (\w+)  # another word; capture that into backref 2.
+    )       # End of lookahead.",
+    RegexOptions.IgnorePatternWhitespace);
+            Match matchResult = wordPairRegex.Match(document);
+            while (matchResult.Success)
+            {
+                wordFamilies.Add(matchResult.Groups[1].Value + matchResult.Groups[2].Value);
+                matchResult = matchResult.NextMatch();
+            }
+
+            //Cleaner way to count frequency compared to using if/else statment 
+            //var groups = wordFamilies.GroupBy(s => s).Select(
+                //s => new { wordFamilies = s.Key, Count = s.Count() });
+
+            //var dd = groups.ToDictionary(g => g.wordFamilies, g => g.Count);
+
+            //foreach (var paii in dict) {Console.WriteLine( paii.Key + ": " + paii.Value); }
+
+            //foreach (var ele in wordFamilies) { Console.WriteLine(ele); }
+
+            //foreach (var pair in dd) { words.Add(pair.Key, pair.Value) ; } //Adding word families to word frequency
+
+            foreach (string pair in wordFamilies)
+            {
+                if (words.ContainsKey(pair)) { words[pair]++; }
+                else { words.Add(pair, 1); }
             }
 
             return wordCount;
