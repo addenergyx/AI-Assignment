@@ -31,19 +31,36 @@ namespace automatic_text_classification
         {
 
             double conProb = 0D, coaProb = 0D, labProb = 0D;
+            double conLogProb = 0D, coaLogProb = 0D, labLogProb = 0D;
 
+            //foreach (var ppp in testDict) { Console.WriteLine(ppp.Value); }
+
+            //Real number probabilities
             foreach (var word in testDict.Keys)
             {
-                if (concpdict.ContainsKey(word)) { conProb = conProb + (concpdict[word] * testDict[word]); }
-                if (coacpdict.ContainsKey(word)) { coaProb = coaProb + (coacpdict[word] * testDict[word]); }
-                if (labcpdict.ContainsKey(word)) { labProb = conProb + (labcpdict[word] * testDict[word]); }
-            }
+                if (concpdict.ContainsKey(word)) { conProb = conProb * (Math.Pow(concpdict[word], testDict[word])); } //conditional probability of a word to the power of word frequency in the test document
+                if (coacpdict.ContainsKey(word)) { coaProb = coaProb * (Math.Pow(coacpdict[word], testDict[word])); }
+                if (labcpdict.ContainsKey(word)) { labProb = conProb * (Math.Pow(labcpdict[word], testDict[word])); }
+                //if (labcpdict.ContainsKey(word)) { labProb = conProb + (labcpdict[word] * testDict[word]); } - [wrong] conditional probability of a word times by word frequency in the test document
 
+            }
             //conProb = Math.Pow(10, conProb) * conPriorProbability; //inverse of log, c# doesn't have power (^) operator, 
             conProb = conProb * conPriorProbability;
             coaProb = coaProb * coaPriorProbability;
             labProb = labProb * labPriorProbability;
 
+            //Taking log of probability to avoid floating-point overflow errors
+            foreach (var word in testDict.Keys)
+            {
+                if (concpdict.ContainsKey(word)) { conLogProb = conLogProb * (Math.Log(Math.Pow(concpdict[word], testDict[word]))); }
+                if (coacpdict.ContainsKey(word)) { coaLogProb = coaLogProb * (Math.Log(Math.Pow(coacpdict[word], testDict[word]))); }
+                if (labcpdict.ContainsKey(word)) { labLogProb = conLogProb * (Math.Log(Math.Pow(labcpdict[word], testDict[word]))); }
+            }
+
+            //Addition of logs is the same as multiplication of real numbers
+            conLogProb = conLogProb + Math.Log(conPriorProbability); //The logarithm of a positive number may be negative or zero. log of a decimal will probably give a negative number
+            coaLogProb = coaLogProb + Math.Log(coaPriorProbability);
+            labLogProb = labLogProb + Math.Log(labPriorProbability);
 
             var predDict = new Dictionary<object, double>
                         {
@@ -52,7 +69,14 @@ namespace automatic_text_classification
                             {Doc.Government.Coalition, coaProb}
                         };
 
-            Console.Clear();
+            var predLogDict = new Dictionary<object, double>
+                        {
+                            {Doc.Government.Labour, labLogProb },
+                            {Doc.Government.Conservative, conLogProb},
+                            {Doc.Government.Coalition, coaLogProb}
+                        };
+
+            Menu.Title();
             foreach (KeyValuePair<object, double> pred in predDict)
             {
                 Console.WriteLine("Probability of {0}: {1:00.00}%", pred.Key, pred.Value * 100); //string formating to display percentage to 2dp
@@ -61,6 +85,16 @@ namespace automatic_text_classification
             var best = predDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key; //selects key with highest value by comparing
             Console.WriteLine("---------------------");
             Console.WriteLine("This document is predicted to be " + best + "\n");
+
+            //Log results
+            foreach (KeyValuePair<object, double> pred in predLogDict)
+            {
+                Console.WriteLine("Log Probability of {0}: {1}", pred.Key, pred.Value);
+            }
+
+            var logBest = predLogDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
+            Console.WriteLine("---------------------");
+            Console.WriteLine("This document is predicted to be " + logBest + "\n");
         }
 
         //Count the frequency of each unique word.  
