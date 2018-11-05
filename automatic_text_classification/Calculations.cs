@@ -30,37 +30,36 @@ namespace automatic_text_classification
                                          double conPriorProbability, double coaPriorProbability, double labPriorProbability)
         {
 
-            double conProb = 0D, coaProb = 0D, labProb = 0D;
+            double conProb = 1D, coaProb = 1D, labProb = 1D; 
             double conLogProb = 0D, coaLogProb = 0D, labLogProb = 0D;
-
-            //foreach (var ppp in testDict) { Console.WriteLine(ppp.Value); }
-
-            //Real number probabilities
+            
+            //Real number probabilities - Can't work due to float overflow
             foreach (var word in testDict.Keys)
             {
-                if (concpdict.ContainsKey(word)) { conProb = conProb * (Math.Pow(concpdict[word], testDict[word])); } //conditional probability of a word to the power of word frequency in the test document
-                if (coacpdict.ContainsKey(word)) { coaProb = coaProb * (Math.Pow(coacpdict[word], testDict[word])); }
-                if (labcpdict.ContainsKey(word)) { labProb = conProb * (Math.Pow(labcpdict[word], testDict[word])); }
-                //if (labcpdict.ContainsKey(word)) { labProb = conProb + (labcpdict[word] * testDict[word]); } - [wrong] conditional probability of a word times by word frequency in the test document
+                if (concpdict.ContainsKey(word)) { conProb *= Math.Pow(concpdict[word], testDict[word]); } //conditional probability of a word to the power of word frequency in the test document
+                if (coacpdict.ContainsKey(word)) { coaProb *= Math.Pow(coacpdict[word], testDict[word]); }
+                if (labcpdict.ContainsKey(word)) { labProb *= Math.Pow(labcpdict[word], testDict[word]); }
+                // [WRONG] if (labcpdict.ContainsKey(word)) { labProb = conProb + (labcpdict[word] * testDict[word]); } - conditional probability of a word times by word frequency in the test document
 
             }
-            //conProb = Math.Pow(10, conProb) * conPriorProbability; //inverse of log, c# doesn't have power (^) operator, 
-            conProb = conProb * conPriorProbability;
-            coaProb = coaProb * coaPriorProbability;
-            labProb = labProb * labPriorProbability;
+
+            conProb *= conPriorProbability;
+            coaProb *= coaPriorProbability;
+            labProb *= labPriorProbability;
 
             //Taking log of probability to avoid floating-point overflow errors
             foreach (var word in testDict.Keys)
             {
-                if (concpdict.ContainsKey(word)) { conLogProb = conLogProb * (Math.Log(Math.Pow(concpdict[word], testDict[word]))); }
-                if (coacpdict.ContainsKey(word)) { coaLogProb = coaLogProb * (Math.Log(Math.Pow(coacpdict[word], testDict[word]))); }
-                if (labcpdict.ContainsKey(word)) { labLogProb = conLogProb * (Math.Log(Math.Pow(labcpdict[word], testDict[word]))); }
+                if (concpdict.ContainsKey(word)) { conLogProb += Math.Log(Math.Pow(concpdict[word], testDict[word])); } //Addition of logs is the same as multiplication of real numbers
+                if (coacpdict.ContainsKey(word)) { coaLogProb += Math.Log(Math.Pow(coacpdict[word], testDict[word])); }
+                if (labcpdict.ContainsKey(word)) { labLogProb += Math.Log(Math.Pow(labcpdict[word], testDict[word])); }
             }
 
-            //Addition of logs is the same as multiplication of real numbers
-            conLogProb = conLogProb + Math.Log(conPriorProbability); //The logarithm of a positive number may be negative or zero. log of a decimal will probably give a negative number
-            coaLogProb = coaLogProb + Math.Log(coaPriorProbability);
-            labLogProb = labLogProb + Math.Log(labPriorProbability);
+            //conProb = Math.Pow(10, conLogProb) * conPriorProbability; //inverse of log, c# doesn't have power (^) operator, 
+            //can't use inverse due to overflow so must keep in log form
+            conLogProb += Math.Log(conPriorProbability); //The logarithm of a positive number may be negative or zero. log of a decimal will probably give a negative number
+            coaLogProb += Math.Log(coaPriorProbability);
+            labLogProb += Math.Log(labPriorProbability);
 
             var predDict = new Dictionary<object, double>
                         {
@@ -82,7 +81,7 @@ namespace automatic_text_classification
                 Console.WriteLine("Probability of {0}: {1:00.00}%", pred.Key, pred.Value * 100); //string formating to display percentage to 2dp
             }
 
-            var best = predDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key; //selects key with highest value by comparing
+            var best = predDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key; 
             Console.WriteLine("---------------------");
             Console.WriteLine("This document is predicted to be " + best + "\n");
 
@@ -92,7 +91,7 @@ namespace automatic_text_classification
                 Console.WriteLine("Log Probability of {0}: {1}", pred.Key, pred.Value);
             }
 
-            var logBest = predLogDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key;
+            var logBest = predLogDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key; //selects key with highest value by comparing
             Console.WriteLine("---------------------");
             Console.WriteLine("This document is predicted to be " + logBest + "\n");
         }
