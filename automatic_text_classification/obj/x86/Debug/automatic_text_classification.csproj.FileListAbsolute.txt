@@ -3,3 +3,4 @@
 /Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/obj/x86/Debug/automatic_text_classification.csproj.CoreCompileInputs.cache
 /Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/obj/x86/Debug/automatic_text_classification.exe
 /Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/obj/x86/Debug/automatic_text_classification.pdb
+/Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/obj/x86/Debug/automatic_text_classification.csprojAssemblyReference.cache
