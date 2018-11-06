@@ -119,7 +119,7 @@ namespace automatic_text_classification
             var regex = new Regex(@"\b[\s,\.\-:;\(\)]*"); //ignore punctuation
             foreach (string word in regex.Split(document).Where(x => !string.IsNullOrEmpty(x)))
             {
-                document = Regex.Replace(document, word, Doc.Stemming(word));
+                document = Regex.Replace(document, word, Doc.Lemmatizing(word));
             }
             //foreach (string word in document.Split(' ')) { document = Regex.Replace(document, word, Stemming(word)); }
 

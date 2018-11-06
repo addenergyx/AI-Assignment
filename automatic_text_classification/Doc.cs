@@ -84,7 +84,7 @@ namespace automatic_text_classification
             return government;
         }
 
-        public static string Stemming(string word)
+        public static string Lemmatizing(string word)
         {
             /*Following Porter's stemming algorithm
              * rules in order
