@@ -242,39 +242,33 @@ namespace automatic_text_classification
 
                     case 3:
 
-                        /*
+                        pathToDir = PathToDirectory(); //path to directory containing training data
+                        while (!Directory.Exists(pathToDir)) //throw new ArgumentException("File doesn't exist, enter new path")
+                        {
+                            Console.WriteLine("Path does not exist!!! Please enter full path to training data directory");
+                            pathToDir = Console.ReadLine().Trim();
+                            //pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
+                            pathToDir = "training_dataset"; //gets file from debug/bin - for testing purposes at the moment
+                        }
+
+                        stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words file"); //Stopwords lookup table
+
+                        Console.WriteLine("Training datasets: " + Doc.FileCount(pathToDir));
+
+                        files = Directory.GetFiles(pathToDir);
+
                         Title();
 
                         //First work out term frequency in category - have a dictionary of word and frequency
                         //only need dict of test to get the words
 
+
+
                         foreach (string fileName in files)
                         {
-                            if (MainClass.DocGovernment(fileName) == MainClass.Government.Labour.ToString())
+                            if (Doc.DocGovernment(fileName) == Doc.Government.Labour.ToString())
                             {
-                                string stopWordsText = File.ReadAllText(stopWordsFile);
 
-                                var stopWords = stopWordsText.Split();
-
-                                var file = File.ReadAllText(fileName).ToLower(); //Change file to lower case
-
-                                foreach (var word in stopWords) { file = Regex.Replace(file, "\\b" + word + "\\b", ""); }
-
-                                foreach (var word in fileDict)
-                                {
-                                    if (file.Contains(word.Key))
-                                    {
-                                        count = count + Regex.Matches(file, word.Key).Count;
-                                        Console.WriteLine(count);
-                                        Console.ReadLine();
-
-                                        //int totalwords = MainClass.WordFrequency(file, dict, stopWordsFile);
-                                    } 
-                                    else
-                                    {
-
-                                    }
-                                }
                             }
 
                             if (MainClass.DocGovernment(fileName) == MainClass.Government.Coalition.ToString())
@@ -297,7 +291,7 @@ namespace automatic_text_classification
 
                         //Term inverse document requency - number of documents in a category that word appears in
                         // log(number of doc in category/no of doc with that term)
-                        */
+
 
                         break;
 
