@@ -33,76 +33,73 @@ namespace automatic_text_classification
                 var coacpdict = new Dictionary<string, double>();
                 var labcpdict = new Dictionary<string, double>();
                 var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as I think case-sensitivity will have little/no impact on accuracy of algorithm could compare results at some point
+                //dict is a temporary dictionary where calculations are made before being moved to a govenment dictionary
                 int labTotal = 0, conTotal = 0, coaTotal = 0, wordCount = 0, nWords = 0, fileCount = 0;
                 double conPriorProbability = 0D, coaPriorProbability = 0D, labPriorProbability = 0D, priorProbability = 0D;
-                string stopWordsFile, pathToFile, pathToDir;
+                string stopWordsFile, pathToTest, pathToDir;
                 string[] files;
+
                 switch (answer)
                 {
                     case 1:
                         Title();
+
                         pathToDir = PathToDirectory(); //path to directory containing training data
                         while (!Directory.Exists(pathToDir)) //throw new ArgumentException("File doesn't exist, enter new path")
                         {
                             Console.WriteLine("Path does not exist!!! Please enter full path to training data directory");
-                            pathToDir = Console.ReadLine().Trim(); 
-                            pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
+                            pathToDir = Console.ReadLine().Trim();
+                            //pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
+                            pathToDir = "training_dataset"; //gets file from debug/bin - for testing purposes at the moment
                         }
 
-                        stopWordsFile = PathToStopWords();
-                        while (!File.Exists(stopWordsFile)) //throw new ArgumentException("File doesn't exist, enter new path")
-                        {
-                            Console.WriteLine("Can not find file!!! Please enter full path to stop words file");
-                            stopWordsFile = Console.ReadLine().Trim();
-                            stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
-                        }
+                        stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words file"); //Stopwords lookup table
 
-                        fileCount = Directory.GetFiles(pathToDir, "*.*", SearchOption.TopDirectoryOnly).Length;
-                        Console.WriteLine("Training data: " + fileCount);
+                        Console.WriteLine("Training datasets: " + Doc.FileCount(pathToDir));
 
                         files = Directory.GetFiles(pathToDir);
 
                         foreach (string file in files)
                         {
-                            if (governmentDict.ContainsKey(MainClass.DocGovernment(file))) { governmentDict[MainClass.DocGovernment(file)]++; }
-                            else { governmentDict.Add(MainClass.DocGovernment(file), 1); }
-                            //Console.WriteLine(file);
+                            //Building government dictionary used to keep track of number of datasets for each government
+                            if (governmentDict.ContainsKey(Doc.DocGovernment(file))) { governmentDict[Doc.DocGovernment(file)]++; }
+                            else { governmentDict.Add(Doc.DocGovernment(file), 1); }
                         }
 
                         foreach (string file in files)
                         {
-                            string government = MainClass.DocGovernment(file);
-                            priorProbability = MainClass.PriorProbabilities(government, fileCount, governmentDict);
+                            string government = Doc.DocGovernment(file); //Government of file
+                            priorProbability = Calculations.PriorProbabilities(government, Doc.FileCount(pathToDir), governmentDict);
      
                             // key-value pair word frequency
-                            wordCount = MainClass.WordFrequency(file, dict, stopWordsFile);
+                            wordCount = Calculations.WordFrequency(file, dict, stopWordsFile);
 
                             switch (government)
                             {
-                                case nameof(MainClass.Government.Conservative):
+                                case nameof(Doc.Government.Conservative):
                                     conTotal += wordCount; // Total number of words in each category including repeats
                                     conDict = conDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
                                     conPriorProbability = priorProbability;
                                     break;
-                                case nameof(MainClass.Government.Coalition):
+                                case nameof(Doc.Government.Coalition):
                                     coaTotal += wordCount;
                                     coaDict = coaDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
                                     coaPriorProbability = priorProbability;
                                     break;
-                                case nameof(MainClass.Government.Labour):
+                                case nameof(Doc.Government.Labour):
                                     labTotal += wordCount;
                                     labDict = labDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
                                     labPriorProbability = priorProbability;
                                     break;
                                 default:
-                                    Console.WriteLine("Could not determine government");
+                                    Console.WriteLine("Could not determine government, data will be discarded");
+                                    Console.ReadLine();
                                     break;
                             }
 
-                            string fileName = Path.GetFileNameWithoutExtension(file);
-
+                            //string fileName = Path.GetFileNameWithoutExtension(file);
                             /*  //Old method to remove stopwords
-                            string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
+                            string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words lookup table
                             StreamReader sr = new StreamReader(stopWordsFile);
                             string stopWordsText = File.ReadAllText(stopWordsFile);
 
@@ -113,7 +110,7 @@ namespace automatic_text_classification
                                 if (dict.ContainsKey(word)) { dict.Remove(word); } //Removing stop words from dictionary
                             }*/
 
-                            //Unique words over all training data
+                            //Unique words throughtout all training data
                             uniqueDict = uniqueDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
 
                         }
@@ -130,86 +127,69 @@ namespace automatic_text_classification
                             if (!conDict.ContainsKey(word.Key)) { conDict.Add(word.Key, 0); }
                         }
 
-                        foreach (KeyValuePair<string, int> fcat in conDict)
+                        foreach (KeyValuePair<string, int> fcat in conDict) //fcat refers to frequency of word in given category
                         {
-                            //Console.WriteLine(fcat.Value); Console.ReadLine();
-                            double cp = MainClass.ConditionalProbability(fcat.Value, conTotal, nWords);
-                            concpdict.Add(fcat.Key, cp); // Building conditional probability table
+                            double cp = Calculations.ConditionalProbability(fcat.Value, conTotal, nWords);
+                            concpdict.Add(fcat.Key, cp); // Building conditional probability dictionary
                         }
                         foreach (KeyValuePair<string, int> fcat in coaDict)
                         {
-                            double cp = MainClass.ConditionalProbability(fcat.Value, coaTotal, nWords);
+                            double cp = Calculations.ConditionalProbability(fcat.Value, coaTotal, nWords);
                             coacpdict.Add(fcat.Key, cp);
                         }
                         foreach (KeyValuePair<string, int> fcat in labDict)
                         {
-                            double cp = MainClass.ConditionalProbability(fcat.Value, labTotal, nWords);
+                            double cp = Calculations.ConditionalProbability(fcat.Value, labTotal, nWords);
                             labcpdict.Add(fcat.Key, cp);
                         }
 
-                        string pathToTest = PathToTestDocument();
+                        pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
 
-                        while (!File.Exists(pathToTest)) 
-                        {
-                            Console.WriteLine("File does not exist!!! Please enter full path to test document");
-                            pathToTest = Console.ReadLine().Trim(); 
-                            pathToTest = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/test1.txt";
-                        }
-
-                        Dictionary < string, int> testDict = new Dictionary<string, int>();
-                        MainClass.WordFrequency(pathToTest, testDict, stopWordsFile);
-                        MainClass.Classification(testDict, concpdict, coacpdict, labcpdict, conPriorProbability,
+                        Calculations.WordFrequency(pathToTest, fileDict, stopWordsFile);
+                        Calculations.Classification(fileDict, concpdict, coacpdict, labcpdict, conPriorProbability,
                                                  coaPriorProbability, labPriorProbability);
 
-                        string save = AskForInfoString("Do you wish to save to csv?");
-                        if (save.ToLower().Equals('y') || save.ToLower().Equals("yes")) //'y' is not working
+                        string save = AskForInfoString("Do you wish to save to csv? [Y/N]");
+                        if (save.ToLower().Trim().Equals("y") || save.ToLower().Trim().Equals("yes")) //'y' is not working
                         {
-                            MainClass.WriteBayesianNetwork(conDict, concpdict, MainClass.Government.Conservative);
-                            MainClass.WriteBayesianNetwork(coaDict, coacpdict, MainClass.Government.Coalition);
-                            MainClass.WriteBayesianNetwork(labDict, labcpdict, MainClass.Government.Labour);
+                            BayesianNetwork.WriteBayesianNetwork(conDict, concpdict, Doc.Government.Conservative);
+                            BayesianNetwork.WriteBayesianNetwork(coaDict, coacpdict, Doc.Government.Coalition);
+                            BayesianNetwork.WriteBayesianNetwork(labDict, labcpdict, Doc.Government.Labour);
                         }
 
                         AnykeyToContinue();
-                        Console.Clear();
                         break;
 
                     case 2:
                         Title();
 
                         //Getting path of test document
-                        pathToFile = PathToTestDocument();
-                        while (!File.Exists(pathToFile))
-                        {
-                            Console.WriteLine("File does not exist!!! Please enter full path to test document");
-                            pathToFile = Console.ReadLine().Trim();
-                            pathToFile = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/test1.txt";
-                        }
+                        pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
 
-                        stopWordsFile = PathToStopWords();
-
-                        //Dictionary<string, string> govPathDict = new Dictionary<string, string>();
-
+                        stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words");
+                        
                         //Replaced with enum
                         //string[] governments = { "Conservative", "Labour", "Coalition" };
                         //string[] paths = new string[3];
 
-                        //Getting network of premade csv of governments
-                        foreach (MainClass.Government party in Enum.GetValues(typeof(MainClass.Government)))
+                        //Getting network of premade csv of categories
+                        foreach (Doc.Government party in Enum.GetValues(typeof(Doc.Government)))
                         {
+                            //temporary dictionaries, given simple variable names to reflect this
                             var a = new Dictionary<string, int>();
                             var b = new Dictionary<string, double>();
 
-                            string pathToBayesian = PathToBayesianNetwork(party.ToString());
-                            MainClass.ReadBayesianNetwork(pathToBayesian, a, b);
+                            string pathToBayesian = Doc.FileExists(PathToBayesianNetwork(party.ToString()), party.ToString() + " bayesian network");
+                            BayesianNetwork.ReadBayesianNetwork(pathToBayesian, a, b);
                             switch (party)
                             {
-                                case MainClass.Government.Conservative:
+                                case Doc.Government.Conservative:
                                     conDict = a; concpdict = b;
                                     break;
-                                case MainClass.Government.Labour:
+                                case Doc.Government.Labour:
                                     labDict = a; labcpdict = b;
                                     break;
-                                case MainClass.Government.Coalition:
+                                case Doc.Government.Coalition:
                                     coaDict = a; coacpdict = b;
                                     break;
                             }
@@ -233,17 +213,17 @@ namespace automatic_text_classification
                         //Prior probability for each category (files in category/total number of training files)
                         foreach (var pair in governmentDict)
                         {
-                            priorProbability = MainClass.PriorProbabilities(pair.Key,fileCount,governmentDict);
+                            priorProbability = Calculations.PriorProbabilities(pair.Key,fileCount,governmentDict);
 
                             switch (pair.Key)
                             {
-                                case nameof(MainClass.Government.Conservative):
+                                case nameof(Doc.Government.Conservative):
                                     conPriorProbability = priorProbability;
                                     break;
-                                case nameof(MainClass.Government.Coalition):
+                                case nameof(Doc.Government.Coalition):
                                     coaPriorProbability = priorProbability;
                                     break;
-                                case nameof(MainClass.Government.Labour):
+                                case nameof(Doc.Government.Labour):
                                     labPriorProbability = priorProbability;
                                     break;
                                 default:
@@ -254,90 +234,42 @@ namespace automatic_text_classification
                         
                         nWords = uniqueDict.Count(); //Total number of unique words throughout training documents
 
-                        MainClass.WordFrequency(pathToFile, fileDict, stopWordsFile);
+                        Calculations.WordFrequency(pathToTest, fileDict, stopWordsFile);
 
-                        MainClass.Classification(fileDict, concpdict, coacpdict, labcpdict, conPriorProbability, coaPriorProbability, labPriorProbability);
+                        Calculations.Classification(fileDict, concpdict, coacpdict, labcpdict, conPriorProbability, coaPriorProbability, labPriorProbability);
                         AnykeyToContinue();
-                        Console.Clear();
                         break;
 
                     case 3:
-                        Title();
-
-                        //First work out term frequency in category - have a dictionary of word and frequency
-                        //only need dict of test to get the words
-
-                        pathToFile = PathToTestDocument();
-                        while (!File.Exists(pathToFile))
-                        {
-                            Console.WriteLine("File does not exist!!! Please enter full path to test document");
-                            pathToFile = Console.ReadLine().Trim();
-                            pathToFile = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/test1.txt";
-                        }
-
-                        stopWordsFile = PathToStopWords();
-
-                        while (!File.Exists(stopWordsFile)) //throw new ArgumentException("File doesn't exist, enter new path")
-                        {
-                            Console.WriteLine("Can not find file!!! Please enter full path to stop words file");
-                            stopWordsFile = Console.ReadLine().Trim();
-                            stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words look up table
-                        }
-
-                        MainClass.WordFrequency(pathToFile, fileDict, stopWordsFile);
 
                         pathToDir = PathToDirectory(); //path to directory containing training data
                         while (!Directory.Exists(pathToDir)) //throw new ArgumentException("File doesn't exist, enter new path")
                         {
                             Console.WriteLine("Path does not exist!!! Please enter full path to training data directory");
                             pathToDir = Console.ReadLine().Trim();
-                            pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
+                            //pathToDir = "/Users/David/Coding/ai-assignment/AI-Assignment/training_dataset/";
+                            pathToDir = "training_dataset"; //gets file from debug/bin - for testing purposes at the moment
                         }
+
+                        stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words file"); //Stopwords lookup table
+
+                        Console.WriteLine("Training datasets: " + Doc.FileCount(pathToDir));
 
                         files = Directory.GetFiles(pathToDir);
 
-                        foreach (string file in files)
-                        {
-                            if (governmentDict.ContainsKey(MainClass.DocGovernment(file))) { governmentDict[MainClass.DocGovernment(file)]++; }
-                            else { governmentDict.Add(MainClass.DocGovernment(file), 1); }
-                            //Console.WriteLine(file);
-                        }
+                        Title();
 
-                        int count = 0;
+                        //First work out term frequency in category - have a dictionary of word and frequency
+                        //only need dict of test to get the words
+
+
 
                         foreach (string fileName in files)
                         {
-                            if (MainClass.DocGovernment(fileName) == MainClass.Government.Labour.ToString())
+                            if (Doc.DocGovernment(fileName) == Doc.Government.Labour.ToString())
                             {
-                                string stopWordsText = File.ReadAllText(stopWordsFile);
 
-                                var stopWords = stopWordsText.Split();
-
-                                var file = File.ReadAllText(fileName).ToLower(); //Change file to lower case
-
-                                foreach (var word in stopWords) { file = Regex.Replace(file, "\\b" + word + "\\b", ""); }
-
-                                foreach (var word in fileDict)
-                                {
-                                    if (file.Contains(word.Key))
-                                    {
-                                        count = count + Regex.Matches(file, word.Key).Count;
-                                        Console.WriteLine(count);
-                                        Console.ReadLine();
-
-                                        //int totalwords = MainClass.WordFrequency(file, dict, stopWordsFile);
-                                    } 
-                                    else
-                                    {
-
-                                    }
-                                }
                             }
-
-
-
-
-
 
                             if (MainClass.DocGovernment(fileName) == MainClass.Government.Coalition.ToString())
                             {
@@ -356,43 +288,19 @@ namespace automatic_text_classification
                             }
                         }
 
-                        foreach (string file in files)
-                        {
-                            string government = MainClass.DocGovernment(file);
-                            priorProbability = MainClass.PriorProbabilities(government, fileCount, governmentDict);
-
-                            // key-value pair word frequency
-                            wordCount = MainClass.WordFrequency(file, dict, stopWordsFile);
-
-                            switch (government)
-                            {
-                                case nameof(MainClass.Government.Conservative):
-                                    conTotal += wordCount; // Total number of words in each category including repeats
-                                    conDict = conDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-                                    conPriorProbability = priorProbability;
-                                    break;
-                                case nameof(MainClass.Government.Coalition):
-                                    coaTotal += wordCount;
-                                    coaDict = coaDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-                                    coaPriorProbability = priorProbability;
-                                    break;
-                                case nameof(MainClass.Government.Labour):
-                                    labTotal += wordCount;
-                                    labDict = labDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-                                    labPriorProbability = priorProbability;
-                                    break;
-                                default:
-                                    Console.WriteLine("Could not determine government");
-                                    break;
-                            }
-                            
-                            uniqueDict = uniqueDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
-
-                        }
 
                         //Term inverse document requency - number of documents in a category that word appears in
                         // log(number of doc in category/no of doc with that term)
 
+
+                        break;
+
+                    case 4:
+                        Title();
+                        Console.WriteLine("All files needed for this program can be found in bin/debug. Therefore to use these files just " +
+                                          "enter file path after bin/debug/. For example to use test1.txt just enter \"test_dataset/test1.txt\". " +
+                                          "To use your own files such as stopwords or bayesian network must enter full path to file when prompted");
+                        Console.ReadLine();
                         break;
 
                     case 0:
@@ -401,8 +309,8 @@ namespace automatic_text_classification
                         break;
 
                     default:
-                        Console.Clear();
-                        Console.WriteLine("Enter a valid number to continue... ");
+                        Console.WriteLine("Invalid number, press [ENTER] to restart ");
+                        Console.ReadLine();
                         break;
                         
                 }
@@ -414,21 +322,20 @@ namespace automatic_text_classification
         {
             bool validInput;
 
-            Console.WriteLine("Queen's Speech Automatic Text Classification");
-            Console.WriteLine("");
+            Title();
             Console.WriteLine("Select from the following options:");
             Console.WriteLine("(1) Undertake Training");
             Console.WriteLine("(2) Undertake a Classification using word frequency");
             Console.WriteLine("(3) Undertake a Classification using TF-IDF");
+            Console.WriteLine("(4) ReadMe");
             Console.WriteLine("(0) Quit");
-
 
             string userInput = Console.ReadLine();
             validInput = Int32.TryParse(userInput, out int result);
 
             while (!validInput)
             { 
-                Console.WriteLine("Invalid Input, Enter either (0),(1),(2),(3)"); 
+                Console.WriteLine("Invalid Input, Enter either (0),(1),(2),(3),(4)"); 
                 userInput = Console.ReadLine(); 
                 validInput = Int32.TryParse(userInput, out result); 
             }

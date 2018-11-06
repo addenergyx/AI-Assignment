@@ -1,6 +1,14 @@
 /Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/bin/Debug/automatic_text_classification.exe
 /Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/bin/Debug/automatic_text_classification.pdb
-/Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/obj/x86/Debug/automatic_text_classification.csprojAssemblyReference.cache
 /Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/obj/x86/Debug/automatic_text_classification.csproj.CoreCompileInputs.cache
 /Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/obj/x86/Debug/automatic_text_classification.exe
 /Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/obj/x86/Debug/automatic_text_classification.pdb
+/Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/obj/x86/Debug/automatic_text_classification.csprojAssemblyReference.cache
+K:/AI-Assignment-lemmatizing_words/automatic_text_classification/bin/Debug/automatic_text_classification.exe.config
+K:/AI-Assignment-lemmatizing_words/automatic_text_classification/bin/Debug/automatic_text_classification.exe
+K:/AI-Assignment-lemmatizing_words/automatic_text_classification/bin/Debug/automatic_text_classification.pdb
+K:/AI-Assignment-lemmatizing_words/automatic_text_classification/obj/x86/Debug/automatic_text_classification.csprojResolveAssemblyReference.cache
+K:/AI-Assignment-lemmatizing_words/automatic_text_classification/obj/x86/Debug/automatic_text_classification.csproj.CoreCompileInputs.cache
+K:/AI-Assignment-lemmatizing_words/automatic_text_classification/obj/x86/Debug/automatic_text_classification.exe
+K:/AI-Assignment-lemmatizing_words/automatic_text_classification/obj/x86/Debug/automatic_text_classification.pdb
+/Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/bin/Debug/automatic_text_classification.exe.config
