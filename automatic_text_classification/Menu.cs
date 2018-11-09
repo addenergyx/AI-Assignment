@@ -414,9 +414,9 @@ namespace automatic_text_classification
                         }
 
                         stopwatch.Stop();
-                        string benchmark = stopwatch.Elapsed.Minutes.ToString();
+                        string benchmark = stopwatch.ElapsedMilliseconds.ToString();
                         foreach (var pred in probDict) { Console.WriteLine(pred.Key + ": " + pred.Value); }
-                        Console.WriteLine( "Time taken to process: " + benchmark);
+                        Console.WriteLine( "Time taken to process: " + Int32.Parse(benchmark) / 60000 );
                         Console.ReadLine();
 
                         /*
