@@ -14,15 +14,91 @@ namespace automatic_text_classification
             return priorProbability;
         }
 
-        public static double ConditionalProbability(int fcat, int ncat, int nWords)
+        public static double ConditionalProbability(double fCat, double nCat, int nWords)
         {
             //Console.WriteLine("{0},{1},{2}",fcat,ncat,nWords);
-            double top = fcat + 1;
-            double bottom = ncat + nWords;
+            double top = fCat + 1;
+            double bottom = nCat + nWords;
             //double conditionalProbability = Math.Log10(top / bottom); //Taking log of probability to avoid floating-point overflow errors
             double conditionalProbability = top / bottom;
             //Console.WriteLine(conditionalProbability);
             return conditionalProbability;
+        }
+
+        public static double TF(string file, string stopWordsFile, KeyValuePair<string,int> word)
+        {
+            Dictionary<string, int> tempDict = new Dictionary<string, int>();
+            int wordCount = WordFrequency(file, tempDict, stopWordsFile);
+
+            tempDict.TryGetValue(word.Key, out int frequency);
+
+            // Term frequency = count how many times the term appears in a document
+            return frequency / (double)wordCount; //to get floating point arithmetic atleast one variable must be a double
+        }
+
+        public static double IDF(string[] files, string stopWordsFile, KeyValuePair<string, int> word, string government)
+        {            
+            // Calculates the IDF for each word
+            int wordExistInFileCount = 0;
+            int fileCount = 0;
+            double idf = 0D;
+
+            foreach (string doc in files)
+            {
+                if (Doc.DocGovernment(doc) == government)
+                {
+                    Dictionary<string, int> tempDict2 = new Dictionary<string, int>();
+                    WordFrequency(doc, tempDict2, stopWordsFile);
+                    if (tempDict2.ContainsKey(word.Key)) { wordExistInFileCount++; }
+                    fileCount++;
+                }
+
+            }
+
+            // Term inverse document frequency - number of documents in a category that word appears in
+            // IDF is log(number of doc in category/no of doc with that term)
+            if (wordExistInFileCount == 0) { idf = 1; } //For unseen words must use smoothed inverse document frequency techniques as cannot divide a number by 0 (add 1 to wordExistInFileCount)
+            else { idf = 1 + Math.Log(fileCount / (double)wordExistInFileCount); } // 1+ to avoid the "divided by 0" error, if a word appears in all docs of a category then idf will be 1 (lower bound for IDF) as that word is not considered special
+
+            return idf;
+        }
+
+        public static double TFIDF (double tf, double idf)
+        {
+            return tf * idf;
+        }
+
+        public static double ConditionProbabilityTFIDF(Dictionary<string, int> catDict, string [] files, string stopWordsFile, Dictionary<string, double> labTFIDF, string government)
+        {
+            List<double> catTFIDF = new List<double>();
+
+            foreach (var word in catDict)
+            {
+                List<double> catWordTFIDF = new List<double>();
+
+                foreach (string file in files)
+                {
+                    double tf = Calculations.TF(file, stopWordsFile, word);
+                    double idf = Calculations.IDF(files, stopWordsFile, word, government);
+                    catWordTFIDF.Add(Calculations.TFIDF(tf, idf));
+
+                }
+                catTFIDF.Add(catWordTFIDF.Sum()); //list containing tf-idf weights of all words in category
+                Console.WriteLine(government + ": " + word.Key + ": " + catWordTFIDF.Sum()); //this is a slow process so printing out idf to give user feedback
+            }
+
+            double nCat = catTFIDF.Sum();
+            Dictionary<string, double> catCpTFIDF = new Dictionary<string, double>();
+
+            foreach (var word in labTFIDF)
+            {
+                //tf-idf uses same conditional probability formula
+                double cp = Calculations.ConditionalProbability(word.Value, catTFIDF.Sum(), catTFIDF.Count());
+                catCpTFIDF.Add(word.Key, Math.Log(cp));
+            }
+
+            double catprob = catCpTFIDF.Sum(x => x.Value);
+            return catprob;
         }
 
         public static void Classification(Dictionary<string, int> testDict, Dictionary<string, double> concpdict,
@@ -96,7 +172,7 @@ namespace automatic_text_classification
             Console.WriteLine("This document is predicted to be " + logBest + "\n");
         }
 
-        //Count the frequency of each unique word.  
+        //Count the frequency of each unique term
         public static int WordFrequency(string file, Dictionary<string, int> words, string stopWordsFile)
         {
 
@@ -115,7 +191,7 @@ namespace automatic_text_classification
 
             int wordCount = document.Split(' ').Length; //Total number of words in each doc including repeats. This method of counting words takes a considerable amount of time
 
-            //stemming document
+            //Lemmatizing document
             var regex = new Regex(@"\b[\s,\.\-:;\(\)]*"); //ignore punctuation
             foreach (string word in regex.Split(document).Where(x => !string.IsNullOrEmpty(x)))
             {
