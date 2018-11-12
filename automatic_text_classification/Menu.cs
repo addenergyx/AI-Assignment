@@ -34,7 +34,7 @@ namespace automatic_text_classification
                 var coacpdict = new Dictionary<string, double>();
                 var labcpdict = new Dictionary<string, double>();
                 var dict = new Dictionary<string, int>(StringComparer.CurrentCultureIgnoreCase); // Ignores casing as I think case-sensitivity will have little/no impact on accuracy of algorithm could compare results at some point
-                //dict is a temporary dictionary where calculations are made before being moved to a govenment dictionary
+                //dict is a temporary dictionary where calculations are made before being moved to a category dictionary
                 int labTotal = 0, conTotal = 0, coaTotal = 0, wordCount = 0, nWords = 0, fileCount = 0;
                 double conPriorProbability = 0D, coaPriorProbability = 0D, labPriorProbability = 0D, priorProbability = 0D;
                 string stopWordsFile, pathToTest, pathToDir;
@@ -177,8 +177,8 @@ namespace automatic_text_classification
                         foreach (Doc.Government party in Enum.GetValues(typeof(Doc.Government)))
                         {
                             //temporary dictionaries, given simple variable names to reflect this
-                            var a = new Dictionary<string, int>();
-                            var b = new Dictionary<string, double>();
+                            var a = new Dictionary<string, int>(); //word frequency temp dict
+                            var b = new Dictionary<string, double>(); //conditional probability temp dict
 
                             string pathToBayesian = Doc.FileExists(PathToBayesianNetwork(party.ToString()), party.ToString() + " bayesian network");
                             BayesianNetwork.ReadBayesianNetwork(pathToBayesian, a, b);
@@ -368,7 +368,7 @@ namespace automatic_text_classification
 
                         string [] governmentDirectoryPosition = new string[5];
 
-                        for (var i = 0; i < files.Length; i++) //get word frequency of files at the start so no need to get them several times later
+                        for (var i = 0; i < files.Length; i++) //get word frequency of files at the start so no need to get them several times later using WordFrequency()
                         {
                             var temp = new Dictionary<string, int>();
                             governmentDirectoryPosition[i] = Doc.DocGovernment(files[i]);
@@ -589,19 +589,14 @@ namespace automatic_text_classification
                         double labprob = labCpTFIDF.Sum(x => x.Value);
                         */
 
-
-
-
-
-
-
                         break;
 
                     case 4:
                         Title();
                         Console.WriteLine("All files needed for this program can be found in bin/debug. Therefore to use these files just " +
-                                          "enter file path after bin/debug/. For example to use test1.txt just enter \"test_dataset/test1.txt\". " +
-                                          "To use your own files such as stopwords or bayesian network must enter full path to file when prompted");
+                                          "enter file path after bin/debug/. For example to use test1.txt just enter \"test_dataset/test1.txt\" " +
+                                          "or for stopwords file enter \"stopwords.txt\". To use your own files such as stopwords or bayesian network " +
+                                          "must enter full path to file when prompted");
                         Console.ReadLine();
                         break;
 
@@ -628,7 +623,7 @@ namespace automatic_text_classification
             Console.WriteLine("Select from the following options:");
             Console.WriteLine("(1) Undertake Training");
             Console.WriteLine("(2) Undertake a Classification using word frequency");
-            Console.WriteLine("(3) Undertake a Classification using TF-IDF [SLOW]");
+            Console.WriteLine("(3) Undertake a Classification using TF-IDF");
             Console.WriteLine("(4) ReadMe");
             Console.WriteLine("(0) Quit");
 

@@ -34,9 +34,9 @@ namespace automatic_text_classification
                     Console.WriteLine(data);
                     data = sr.ReadLine();
                     string[] values = data.Split(',');
-                    Console.WriteLine(values[0]);
-                    Console.WriteLine(values[1]);
-                    Console.WriteLine(values[2]);
+                    Console.WriteLine(values[0]); //word
+                    Console.WriteLine(values[1]); //term frequency
+                    Console.WriteLine(values[2]); //conditional probability
 
                     string word = values[0];
                     int frequency = Int32.Parse(values[1]);
