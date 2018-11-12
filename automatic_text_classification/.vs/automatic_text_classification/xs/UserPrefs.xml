@@ -2,9 +2,9 @@
   <MonoDevelop.Ide.Workbench ActiveDocument="Menu.cs">
     <Files>
       <File FileName="Program.cs" Line="8" Column="10" />
-      <File FileName="Menu.cs" Line="416" Column="31" />
+      <File FileName="Menu.cs" Line="436" Column="136" />
       <File FileName="BayesianNetwork.cs" Line="23" Column="1" />
-      <File FileName="Calculations.cs" Line="19" Column="65" />
+      <File FileName="Calculations.cs" Line="100" Column="63" />
       <File FileName="Doc.cs" Line="87" Column="38" />
     </Files>
   </MonoDevelop.Ide.Workbench>
