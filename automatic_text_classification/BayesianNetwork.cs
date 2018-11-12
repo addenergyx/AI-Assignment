@@ -11,10 +11,8 @@ namespace automatic_text_classification
         {
             string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); //Multiplatform home environment
 
-            Console.WriteLine("\nEnter file name to save Navie Bayes table for category {0}\n[Current location: {1}]\n[Make sure to include extension '.csv']", government, home);
+            Console.WriteLine("\nEnter filename to save Navie Bayes table for category {0}\n[Current location: {1}]\n[Make sure to include extension '.csv']", government, home);
             string fileName = Console.ReadLine();
-
-            //string filePath = "/Users/David/Coding/ai-assignment/AI-Assignment/test_dataset/";
 
             String csv = String.Join(
                 Environment.NewLine,
@@ -46,9 +44,6 @@ namespace automatic_text_classification
                     b.Add(word, conditionalprobability);
                 }
             }
-            //var dict = File.ReadLines(file).Select(line => line.Split(',')).ToDictionary(line => line[0], line => line[1]);
-            //var bndict = new Dictionary<string, Dictionary<int, float>>();
-
         }
     }
 }
