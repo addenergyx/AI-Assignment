@@ -25,35 +25,50 @@ namespace automatic_text_classification
             return conditionalProbability;
         }
 
-        public static double TF(string file, string stopWordsFile, KeyValuePair<string,int> word)
+        //public static double TF(string file, string stopWordsFile, KeyValuePair<string, int> word)
+        public static double TF(KeyValuePair<string,int> word, Dictionary<string, int> temp)
         {
-            Dictionary<string, int> tempDict = new Dictionary<string, int>();
-            int wordCount = WordFrequency(file, tempDict, stopWordsFile);
+            //Dictionary<string, int> tempDict = new Dictionary<string, int>();
+            //int wordCount = WordFrequency(file, tempDict, stopWordsFile);
 
-            tempDict.TryGetValue(word.Key, out int frequency);
+            temp.TryGetValue(word.Key, out int frequency);
+            double wordCount = temp.Sum(x => x.Value);
 
             // Term frequency = count how many times the term appears in a document
-            return frequency / (double)wordCount; //to get floating point arithmetic atleast one variable must be a double
+            return frequency / wordCount; //to get floating point arithmetic atleast one variable must be a double
         }
 
-        public static double IDF(string[] files, string stopWordsFile, KeyValuePair<string, int> word, string government)
-        {            
+        //public static double IDF(string[] files, string stopWordsFile, KeyValuePair<string, int> word, string government)
+        public static double IDF(KeyValuePair<string, int> word, string government, string[] governmentDirectoryPosition, Dictionary<string, int>[] arrayOfFileDictionaries)
+        {
             // Calculates the IDF for each word
             int wordExistInFileCount = 0;
             int fileCount = 0;
             double idf = 0D;
 
+            //looping through predetermined wordfrequency, quicker then calling WordFrequency() many times
+            for (int i = 0; i < governmentDirectoryPosition.Length; i++)
+            {
+                if (governmentDirectoryPosition[i] == government)
+                {
+                    if (arrayOfFileDictionaries[i].ContainsKey(word.Key)) { wordExistInFileCount++; } //Number of documents with term in it
+                    fileCount++;
+                }
+            }
+
+            /*
             foreach (string doc in files)
             {
                 if (Doc.DocGovernment(doc) == government)
                 {
+                    //this process takes a long time
                     Dictionary<string, int> tempDict2 = new Dictionary<string, int>();
-                    WordFrequency(doc, tempDict2, stopWordsFile);
+                    WordFrequency(doc, tempDict2, stopWordsFile);  
                     if (tempDict2.ContainsKey(word.Key)) { wordExistInFileCount++; }
                     fileCount++;
                 }
 
-            }
+            }*/
 
             // Term inverse document frequency - number of documents in a category that word appears in
             // IDF is log(number of doc in category/no of doc with that term)
@@ -68,23 +83,37 @@ namespace automatic_text_classification
             return tf * idf;
         }
 
-        public static double ConditionProbabilityTFIDF(Dictionary<string, int> catDict, string [] files, string stopWordsFile, Dictionary<string, double> labTFIDF, string government)
+        //public static double SumOfTFIDFInCategory(Dictionary<string, int> categoryWordFrequency, string[] files, string stopWordsFile, Dictionary<string, double> labTFIDF, string government)
+        public static double SumOfTFIDFInCategory(Dictionary<string, int> categoryWordFrequency, string[] governmentDirectoryPosition, Dictionary<string, double> labTFIDF, string government, Dictionary<string, int>[] arrayOfFileDictionaries)
         {
             List<double> catTFIDF = new List<double>();
 
-            foreach (var word in catDict)
+            foreach (var word in categoryWordFrequency)
             {
-                List<double> catWordTFIDF = new List<double>();
+                List<double> tempCategoryWordTFIDF = new List<double>();
 
+
+                for (int i = 0; i < arrayOfFileDictionaries.Length; i++)
+                {
+                    double tf = TF(word, arrayOfFileDictionaries[i]);
+                    double idf = IDF(word, government, governmentDirectoryPosition, arrayOfFileDictionaries);
+                    tempCategoryWordTFIDF.Add(TFIDF(tf, idf));
+                }
+
+                /*
                 foreach (string file in files)
                 {
-                    double tf = Calculations.TF(file, stopWordsFile, word);
-                    double idf = Calculations.IDF(files, stopWordsFile, word, government);
-                    catWordTFIDF.Add(Calculations.TFIDF(tf, idf));
+                    Dictionary<string, int> temp = new Dictionary<string, int>();
+                    WordFrequency(file, temp, stopWordsFile);
+                    double tf = Calculations.TF(word, temp);
+                    double idf = Calculations.IDF(word, government);
+                    tempCategoryWordTFIDF.Add(Calculations.TFIDF(tf, idf));
 
                 }
-                catTFIDF.Add(catWordTFIDF.Sum()); //list containing tf-idf weights of all words in category
-                Console.WriteLine(government + ": " + word.Key + ": " + catWordTFIDF.Sum()); //this is a slow process so printing out idf to give user feedback
+                *///old
+
+                catTFIDF.Add(tempCategoryWordTFIDF.Sum()); //list containing tf-idf weights of all words in category
+                Console.WriteLine(government + ": " + word.Key + ": " + tempCategoryWordTFIDF.Sum()); //this is a slow process so printing out idf to give user feedback
             }
 
             double nCat = catTFIDF.Sum();
@@ -189,7 +218,7 @@ namespace automatic_text_classification
             //removing stopwords messes with the whitespacing of the text
             document = Regex.Replace(document, @"\s+", " "); //replaces multiple spaces with one, needed for word families
 
-            int wordCount = document.Split(' ').Length; //Total number of words in each doc including repeats. This method of counting words takes a considerable amount of time
+            //int wordCount = document.Split(' ').Length; //Total number of words in each doc including repeats. This method of counting words takes a considerable amount of time
 
             //Lemmatizing document
             var regex = new Regex(@"\b[\s,\.\-:;\(\)]*"); //ignore punctuation
@@ -207,6 +236,8 @@ namespace automatic_text_classification
                 currentCount++;
                 words[match.Value] = currentCount;
             }
+
+            int wordCount = words.Sum(x => x.Value); //Total number of words in each doc including repeats, more efficient then int wordCount = document.Split(' ').Length 
 
             //Using n-grams - word families
             List<string> wordFamilies = new List<string>();
