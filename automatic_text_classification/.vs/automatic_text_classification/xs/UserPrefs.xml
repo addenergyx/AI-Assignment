@@ -1,11 +1,11 @@
 ﻿<Properties StartupConfiguration="{93727225-2C84-41B9-8575-698F7E7D2948}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Doc.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Menu.cs">
     <Files>
-      <File FileName="Program.cs" Line="12" Column="6" />
-      <File FileName="Menu.cs" Line="75" Column="1" />
-      <File FileName="BayesianNetwork.cs" Line="23" Column="1" />
-      <File FileName="Calculations.cs" Line="48" Column="24" />
-      <File FileName="Doc.cs" Line="35" Column="23" />
+      <File FileName="Program.cs" Line="8" Column="10" />
+      <File FileName="Menu.cs" Line="10" Column="6" />
+      <File FileName="BayesianNetwork.cs" Line="14" Column="44" />
+      <File FileName="Calculations.cs" Line="160" Column="14" />
+      <File FileName="Doc.cs" Line="97" Column="223" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.ItemProperties.automatic__text__classification PreferredExecutionTarget="MonoDevelop.Default" />

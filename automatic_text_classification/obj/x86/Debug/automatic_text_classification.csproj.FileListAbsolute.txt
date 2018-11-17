@@ -12,3 +12,17 @@ K:/AI-Assignment-lemmatizing_words/automatic_text_classification/obj/x86/Debug/a
 K:/AI-Assignment-lemmatizing_words/automatic_text_classification/obj/x86/Debug/automatic_text_classification.exe
 K:/AI-Assignment-lemmatizing_words/automatic_text_classification/obj/x86/Debug/automatic_text_classification.pdb
 /Users/David/Coding/ai-assignment/AI-Assignment/automatic_text_classification/bin/Debug/automatic_text_classification.exe.config
+C:\Users\ada121\Downloads\AI-Assignment-tf-idf_2\AI-Assignment-tf-idf_2\automatic_text_classification\bin\Debug\automatic_text_classification.exe.config
+C:\Users\ada121\Downloads\AI-Assignment-tf-idf_2\AI-Assignment-tf-idf_2\automatic_text_classification\bin\Debug\automatic_text_classification.exe
+C:\Users\ada121\Downloads\AI-Assignment-tf-idf_2\AI-Assignment-tf-idf_2\automatic_text_classification\bin\Debug\automatic_text_classification.pdb
+C:\Users\ada121\Downloads\AI-Assignment-tf-idf_2\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_text_classification.csprojResolveAssemblyReference.cache
+C:\Users\ada121\Downloads\AI-Assignment-tf-idf_2\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_text_classification.csproj.CoreCompileInputs.cache
+C:\Users\ada121\Downloads\AI-Assignment-tf-idf_2\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_text_classification.exe
+C:\Users\ada121\Downloads\AI-Assignment-tf-idf_2\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_text_classification.pdb
+K:\AI-Assignment-tf-idf_2\automatic_text_classification\bin\Debug\automatic_text_classification.exe.config
+K:\AI-Assignment-tf-idf_2\automatic_text_classification\bin\Debug\automatic_text_classification.exe
+K:\AI-Assignment-tf-idf_2\automatic_text_classification\bin\Debug\automatic_text_classification.pdb
+K:\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_text_classification.csprojResolveAssemblyReference.cache
+K:\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_text_classification.csproj.CoreCompileInputs.cache
+K:\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_text_classification.exe
+K:\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_text_classification.pdb

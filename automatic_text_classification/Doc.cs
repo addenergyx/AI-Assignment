@@ -25,68 +25,39 @@ namespace automatic_text_classification
             return file;
         }
 
+        public static string DirectoryExists(string pathToDir)
+        {
+            while (!Directory.Exists(pathToDir))
+            {
+                Console.WriteLine("Path does not exist!!! Please enter full path to training data directory");
+                pathToDir = Console.ReadLine().Trim();
+                pathToDir = "training_dataset"; //gets file from debug/bin - for testing purposes at the moment
+            }
+            return pathToDir;
+        }
+
         public static string DocGovernment(string fileName)
         {
-            //get government from filename
+            //gets government from filename
             string government = "";
 
             string[] parties = Enum.GetNames(typeof(Government));
 
             int q = 0;
 
-            while (!fileName.ToLower().Contains(parties[q].ToLower())) //alot neater than if statement below
+            while (!fileName.ToLower().Contains(parties[q].ToLower()))
             {
                 q++;
             }
 
             government = parties[q];
 
-            /*
-            foreach (string party in parties)
-            {
-                Console.WriteLine
-                if (fileName.ToLower().Contains(party.ToLower()))
-                {
-                    government = party; //As of C#6 the best way to get the name of an enum is the new nameof operator instead of .toString
-                }
-                else
-                {
-                    Console.WriteLine("Couldn't determine government\nPlease ensure all filenames of " +
-                                      "training data contain a political party");
-                    Console.ReadLine();
-                }
-            }
-
-
-            if (fileName.ToLower().Contains("conservative"))
-            {
-                government = nameof(Government.Conservative); //As of C#6 the best way to get the name of an enum is the new nameof operator instead of .toString
-
-            }
-            else if (fileName.ToLower().Contains("labour"))
-            {
-                government = nameof(Government.Labour);
-            }
-            else if (fileName.ToLower().Contains(nameof(Government.Coalition).ToLower()))
-            {
-                government = nameof(Government.Coalition);
-            }
-            else
-            {
-                Console.WriteLine("Couldn't determine government\nPlease ensure filename of " +
-                                  "training data contains government");
-                Console.ReadLine();
-            }*/
-
-            //Console.WriteLine("Government: {0}", government);
-            //Regex docGovernment = new Regex("[^a-zA-Z0-9]");
-            //Console.WriteLine(government);
             return government;
         }
 
         public static string Lemmatizing(string word)
         {
-            /*Following Porter's stemming algorithm
+            /*Following Porter's stemming algorithm http://snowball.tartarus.org/algorithms/english/stemmer.html
              * rules in order
              * 1a)
              * sses -> ss
@@ -112,13 +83,10 @@ namespace automatic_text_classification
              * 
             */
 
-            // In porter stemming y is considered a vowel
-
             //step 1a
             if (word.EndsWith("s", StringComparison.CurrentCultureIgnoreCase))
             {
                 if (word.EndsWith("sses", StringComparison.CurrentCultureIgnoreCase)) { word = Regex.Replace(word, "sses$", "es"); }
-                //if (word.EndsWith("ies", StringComparison.CurrentCultureIgnoreCase)) { Regex.Replace(word, "ies$", "y"); }
 
                 if (word.EndsWith("ies", StringComparison.CurrentCultureIgnoreCase) || word.EndsWith("ied", StringComparison.CurrentCultureIgnoreCase))
                 {
@@ -126,11 +94,7 @@ namespace automatic_text_classification
                     else { word = Regex.Replace(word, @"ie[sd]$", "i"); }
                 }
 
-                if (Regex.IsMatch(word, @"[^aeiouy]s$")) //delete s if preceding word part contains a vowel not immediately before the s
-                {
-                    word = Regex.Replace(word, "s$", "");
-                }
-
+                if (Regex.IsMatch(word, @"[^aeiouy]s$")) { word = Regex.Replace(word, "s$", ""); } //delete s if preceding word part contains a vowel not immediately before the s, In porter stemming y is considered a vowel
             }
 
             //step 1b
@@ -146,9 +110,7 @@ namespace automatic_text_classification
                     else if (word.Length < 4) { word += "e"; }
                 }
             }
-
-            //if (word.EndsWith("ed") || word.EndsWith("edly") || word.EndsWith("ing") || word.EndsWith("ingly"))
-
+            
             //step 1c
             if (Regex.IsMatch(word, @"[^aeiouy]y$")) { word = Regex.Replace(word, @"y$", "i"); }
 
