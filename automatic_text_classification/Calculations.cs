@@ -16,9 +16,9 @@ namespace automatic_text_classification
 
         public static double ConditionalProbability(double fCat, double nCat, int nWords)
         {
+            //P(word / cata) = (fcata[word]) + 1)  / (Ncata + Nwords)
             double top = fCat + 1;
             double bottom = nCat + nWords;
-            //double conditionalProbability = Math.Log10(top / bottom); // Taking log of probability to avoid floating-point overflow errors
             double conditionalProbability = top / bottom;
             return conditionalProbability;
         }
@@ -31,7 +31,7 @@ namespace automatic_text_classification
             return frequency / wordCount; // To get floating point arithmetic atleast one variable must be a double
         }
 
-        public static double IDF(KeyValuePair<string, int> word, string government, string[] governmentDirectoryPosition, Dictionary<string, int>[] arrayOfFileDictionaries)
+        public static double IDF(KeyValuePair<string, int> word, string government, List<string> governmentDirectoryPosition, List<Dictionary<string, int>> listOfFileDictionaries)
         {
             // Calculates the IDF for each word
             int wordExistInFileCount = 0;
@@ -39,11 +39,11 @@ namespace automatic_text_classification
             double idf = 0D;
 
             // Looping through predetermined wordfrequency, quicker then calling WordFrequency() many times
-            for (int i = 0; i < governmentDirectoryPosition.Length; i++)
+            for (int i = 0; i < governmentDirectoryPosition.Count; i++)
             {
                 if (governmentDirectoryPosition[i] == government)
                 {
-                    if (arrayOfFileDictionaries[i].ContainsKey(word.Key)) { wordExistInFileCount++; } //Number of documents with term in it
+                    if (listOfFileDictionaries[i].ContainsKey(word.Key)) { wordExistInFileCount++; } //Number of documents with term in it
                     fileCount++;
                 }
             }
@@ -56,12 +56,12 @@ namespace automatic_text_classification
             return idf;
         }
 
-        public static double TFIDF (double tf, double idf)
+        public static double TFIDF (double tf, double idf) //Algorithm from http://www.tfidf.com/ and https://monkeylearn.com/blog/practical-explanation-naive-bayes-classifier/
         {
             return tf * idf;
         }
 
-        public static double SumOfTFIDFInCategory(Dictionary<string, int> categoryWordFrequency, string[] governmentDirectoryPosition, Dictionary<string, double> categoryTFIDF, string government, Dictionary<string, int>[] arrayOfFileDictionaries)
+        public static double SumOfTFIDFInCategory(Dictionary<string, int> categoryWordFrequency, List<string> governmentDirectoryPosition, Dictionary<string, double> categoryTFIDF, string government, List<Dictionary<string, int>> listOfFileDictionaries)
         {
             List<double> catTFIDF = new List<double>();
 
@@ -70,24 +70,12 @@ namespace automatic_text_classification
                 List<double> tempCategoryWordTFIDF = new List<double>();
 
 
-                for (int i = 0; i < arrayOfFileDictionaries.Length; i++)
+                for (int i = 0; i < listOfFileDictionaries.Count; i++)
                 {
-                    double tf = TF(word, arrayOfFileDictionaries[i]);
-                    double idf = IDF(word, government, governmentDirectoryPosition, arrayOfFileDictionaries);
+                    double tf = TF(word, listOfFileDictionaries[i]);
+                    double idf = IDF(word, government, governmentDirectoryPosition, listOfFileDictionaries);
                     tempCategoryWordTFIDF.Add(TFIDF(tf, idf));
                 }
-
-                /*
-                foreach (string file in files)
-                {
-                    Dictionary<string, int> temp = new Dictionary<string, int>();
-                    WordFrequency(file, temp, stopWordsFile);
-                    double tf = Calculations.TF(word, temp);
-                    double idf = Calculations.IDF(word, government);
-                    tempCategoryWordTFIDF.Add(Calculations.TFIDF(tf, idf));
-
-                }
-                *///old
 
                 catTFIDF.Add(tempCategoryWordTFIDF.Sum()); //list containing tf-idf weights of all words in category
                 Console.WriteLine(government + ": " + word.Key + ": " + tempCategoryWordTFIDF.Sum()); //this is a slow process so printing out idf to give user feedback
@@ -99,11 +87,10 @@ namespace automatic_text_classification
             foreach (var word in categoryTFIDF)
             {
                 //tf-idf uses same conditional probability formula
-                double cp = Calculations.ConditionalProbability(word.Value, catTFIDF.Sum(), catTFIDF.Count());
+                double cp = ConditionalProbability(word.Value, catTFIDF.Sum(), catTFIDF.Count());
                 catCpTFIDF.Add(word.Key, Math.Log(cp));
             }
 
-            //double catprob = catCpTFIDF.Sum(x => x.Value);
             return catCpTFIDF.Sum(x => x.Value);
         }
 
@@ -112,25 +99,7 @@ namespace automatic_text_classification
                                          double conPriorProbability, double coaPriorProbability, double labPriorProbability)
         {
 
-            double conProb = 1D, coaProb = 1D, labProb = 1D; 
             double conLogProb = 0D, coaLogProb = 0D, labLogProb = 0D;
-
-            /*
-            //Real number probabilities - Can't work due to float overflow
-            foreach (var word in testDict.Keys)
-            {            
-                //conProb = Math.Pow(10, conLogProb) * conPriorProbability; //inverse of log, c# doesn't have power (^) operator, 
-                if (concpdict.ContainsKey(word)) { conProb *= Math.Pow(concpdict[word], testDict[word]); } //conditional probability of a word to the power of word frequency in the test document
-                if (coacpdict.ContainsKey(word)) { coaProb *= Math.Pow(coacpdict[word], testDict[word]); }
-                if (labcpdict.ContainsKey(word)) { labProb *= Math.Pow(labcpdict[word], testDict[word]); }
-                // [WRONG] if (labcpdict.ContainsKey(word)) { labProb = conProb + (labcpdict[word] * testDict[word]); } - conditional probability of a word times by word frequency in the test document
-
-            }
-
-            conProb *= conPriorProbability;
-            coaProb *= coaPriorProbability;
-            labProb *= labPriorProbability;
-            */
 
             //Taking log of probability to avoid floating-point overflow errors
             foreach (var word in testDict.Keys)
@@ -145,51 +114,25 @@ namespace automatic_text_classification
             coaLogProb += Math.Log(coaPriorProbability);
             labLogProb += Math.Log(labPriorProbability);
 
-            /*
-            var predDict = new Dictionary<object, double>
+            var predLogDict = new Dictionary<string, double>
                         {
-                            {Doc.Government.Labour, labProb },
-                            {Doc.Government.Conservative, conProb},
-                            {Doc.Government.Coalition, coaProb}
-                        };
-            */
-
-            var predLogDict = new Dictionary<object, double>
-                        {
-                            {Doc.Government.Labour, labLogProb },
-                            {Doc.Government.Conservative, conLogProb},
-                            {Doc.Government.Coalition, coaLogProb}
+                            {Doc.Government.Labour.ToString(), labLogProb },
+                            {Doc.Government.Conservative.ToString(), conLogProb},
+                            {Doc.Government.Coalition.ToString(), coaLogProb}
                         };
 
-            Menu.Title();
+            BestGovernment(predLogDict);
 
-            /*
-            foreach (KeyValuePair<object, double> pred in predDict)
-            {
-                Console.WriteLine("Probability of {0}: {1:00.00}%", pred.Key, pred.Value * 100); //string formating to display percentage to 2dp
-            }
-
-            var best = predDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key; 
-            Console.WriteLine("---------------------");
-            Console.WriteLine("This document is predicted to be " + best + "\n");
-            */
-
-            //Log results
-            foreach (KeyValuePair<object, double> pred in predLogDict)
-            {
-                Console.WriteLine("Log Probability of {0}: {1}", pred.Key, pred.Value);
-            }
-
-            var logBest = predLogDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key; //selects key with highest value by comparing
-            Console.WriteLine("---------------------");
-            Console.WriteLine("This document is predicted to be " + logBest + "\n");
         }
 
         //Count the frequency of each unique term in a file
         public static int WordFrequency(string file, Dictionary<string, int> words, string stopWordsFile)
         {
             StreamReader sr = new StreamReader(stopWordsFile);
+
             string stopWordsText = File.ReadAllText(stopWordsFile); // Stop Words look up table
+
+            sr.Close();
 
             var stopWords = stopWordsText.Split();
 
@@ -221,16 +164,7 @@ namespace automatic_text_classification
             //Using n-grams - word families
             List<string> wordFamilies = new List<string>();
 
-            //https://stackoverflow.com/questions/6695327/need-c-sharp-regex-to-get-pairs-of-words-in-a-sentence
-            Regex wordPairRegex = new Regex(
-    @"(     # Match and capture in backreference no. 1:
-     \w+    # one or more alphanumeric characters
-     \s+    # one or more whitespace characters.
-    )       # End of capturing group 1.
-    (?=     # Assert that there follows...
-     (\w+)  # another word; capture that into backref 2.
-    )       # End of lookahead.",
-    RegexOptions.IgnorePatternWhitespace);
+            Regex wordPairRegex = new Regex(@"(\w+\s+)(?=(\w+))", RegexOptions.IgnorePatternWhitespace); //Regex for pairs of words in a text
             Match matchResult = wordPairRegex.Match(document);
             while (matchResult.Success)
             {
@@ -246,6 +180,17 @@ namespace automatic_text_classification
             }
 
             return wordCount;
+        }
+
+        public static void BestGovernment(Dictionary<string, double> probDict)
+        {
+            //Log results
+            Menu.Title();
+            foreach (KeyValuePair<string, double> pred in probDict) { Console.WriteLine("Log Probability of {0}: {1}", pred.Key, pred.Value); }
+            var logBest = probDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key; //selects key with highest value by comparing
+            Console.WriteLine("---------------------");
+            Console.WriteLine("This document is predicted to be " + logBest + "\n");
+            Menu.AnykeyToContinue();
         }
     }
 }

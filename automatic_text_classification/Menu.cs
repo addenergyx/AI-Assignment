@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Linq;
-using System.Text;
 using System.IO;
-using System.Text.RegularExpressions;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics; //debugging
+using System.Collections.Specialized; //for ListDictionary
 
 namespace automatic_text_classification
 {
@@ -45,15 +43,10 @@ namespace automatic_text_classification
                     case 1:
                         Title();
 
-                        pathToDir = PathToDirectory(); // Path to directory containing training data
-                        while (!Directory.Exists(pathToDir)) //throw new ArgumentException("Path doesn't exist, enter new path")
-                        {
-                            Console.WriteLine("Path does not exist!!! Please enter full path to training data directory");
-                            pathToDir = Console.ReadLine().Trim();
-                            pathToDir = "training_dataset"; // Gets file from debug/bin - for testing purposes at the moment
-                        }
+                        pathToDir = Doc.DirectoryExists(PathToDirectory());
 
-                        stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words file"); // Stopwords lookup table
+                        //stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words file"); // Stopwords lookup table
+                        stopWordsFile = "stopwords.txt"; // for testing purposes
 
                         Console.WriteLine("Training datasets: " + Doc.FileCount(pathToDir));
 
@@ -97,19 +90,6 @@ namespace automatic_text_classification
                                     break;
                             }
 
-                            //string fileName = Path.GetFileNameWithoutExtension(file);
-                            /*  //Old method to remove stopwords
-                            string stopWordsFile = "/Users/David/Coding/ai-assignment/AI-Assignment/stopwords.txt"; //Stop Words lookup table
-                            StreamReader sr = new StreamReader(stopWordsFile);
-                            string stopWordsText = File.ReadAllText(stopWordsFile);
-
-                            var stopWords = stopWordsText.Split();
-
-                            foreach (var word in stopWords)
-                            {
-                                if (dict.ContainsKey(word)) { dict.Remove(word); } //Removing stop words from dictionary
-                            }*/
-
                             //Unique words throughtout all training data
                             uniqueDict = uniqueDict.Union(dict).GroupBy(i => i.Key, i => i.Value).ToDictionary(i => i.Key, i => i.Sum());
 
@@ -143,7 +123,8 @@ namespace automatic_text_classification
                             labcpdict.Add(fcat.Key, cp);
                         }
 
-                        pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
+                        //pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
+                        pathToTest = "test_dataset/test1.txt"; //for testing purposes
 
                         Calculations.WordFrequency(pathToTest, fileDict, stopWordsFile);
                         Calculations.Classification(fileDict, concpdict, coacpdict, labcpdict, conPriorProbability,
@@ -167,10 +148,6 @@ namespace automatic_text_classification
                         pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
 
                         stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words");
-                        
-                        //Replaced with enum
-                        //string[] governments = { "Conservative", "Labour", "Coalition" };
-                        //string[] paths = new string[3];
 
                         //Getting network of premade csv of categories
                         foreach (Doc.Government party in Enum.GetValues(typeof(Doc.Government)))
@@ -243,13 +220,7 @@ namespace automatic_text_classification
                     case 3:
                         Title();
 
-                        pathToDir = PathToDirectory(); // Path to directory containing training data
-                        while (!Directory.Exists(pathToDir)) 
-                        {
-                            Console.WriteLine("Path does not exist!!! Please enter full path to training data directory");
-                            pathToDir = Console.ReadLine().Trim();
-                            pathToDir = "training_dataset"; //gets file from debug/bin - for testing purposes at the moment
-                        }
+                        pathToDir = Doc.DirectoryExists(PathToDirectory());
 
                         //stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words file");
                         stopWordsFile = "stopwords.txt"; // for testing purposes
@@ -293,30 +264,17 @@ namespace automatic_text_classification
                         Dictionary<string, double> conTFIDF = new Dictionary<string, double>();
                         Dictionary<string, double> coaTFIDF = new Dictionary<string, double>();
 
-                        //Stopwatch stopwatch = new Stopwatch(); //MSDN documentation advises against using DateTime for benchmarking
-                        //stopwatch.Start();
+                        // Can't use a dictionary for listOfFileDictionaries and governmentDirectoryPosition because some dictionaries will have same key (government) 
+                        List<Dictionary<string, int>> listOfFileDictionaries = new List<Dictionary<string, int>>(); //Using lists instead of arrays to allow for scaling of training data
 
-                        ///////////////////////// new method - considerably faster than old method
+                        List<string> governmentDirectoryPosition = new List<string>();
 
-                        // Can't use a dictionary for arrayOfFileDictionaries and governmentDirectoryPosition because some dictionaries will have same key (government) 
-                        var arrayOfFileDictionaries = new[]
-                        {
-                            new Dictionary<string, int>(),
-                            new Dictionary<string, int>(),
-                            new Dictionary<string, int>(),
-                            new Dictionary<string, int>(),
-                            new Dictionary<string, int>()
-
-                        };
-
-                        string [] governmentDirectoryPosition = new string[5];
-
-                        for (var i = 0; i < files.Length; i++) // Get word frequency of files at the start so no need to get them several times later using WordFrequency()
-                        {
+                        for (var i = 0; i < files.Length; i++) // Gets word frequency of files at the start so no need to get them several times later using WordFrequency()
+                        {     
                             var temp = new Dictionary<string, int>();
-                            governmentDirectoryPosition[i] = Doc.DocGovernment(files[i]);
+                            governmentDirectoryPosition.Add(Doc.DocGovernment(files[i]));
                             Calculations.WordFrequency(files[i], temp, stopWordsFile);
-                            arrayOfFileDictionaries[i] = temp;
+                            listOfFileDictionaries.Add(temp);
                         }
 
                         //part a
@@ -326,35 +284,36 @@ namespace automatic_text_classification
                             List<double> conWordTFIDF = new List<double>();
                             List<double> coaWordTFIDF = new List<double>();
 
-                            for (var i = 0; i < governmentDirectoryPosition.Length; i++)
+                            for (var i = 0; i < governmentDirectoryPosition.Count; i++)
                             {
                                 if (governmentDirectoryPosition[i] == Doc.Government.Labour.ToString())
                                 {
-                                    double tf = Calculations.TF(word, arrayOfFileDictionaries[i]);
-                                    double idf = Calculations.IDF(word, governmentDirectoryPosition[i], governmentDirectoryPosition, arrayOfFileDictionaries); //Need government variable in IDF because it looks at the whole dataset unlike tf that just looks at the document
+                                    double tf = Calculations.TF(word, listOfFileDictionaries[i]);
+                                    double idf = Calculations.IDF(word, governmentDirectoryPosition[i], governmentDirectoryPosition, listOfFileDictionaries); //Need government variable in IDF because it looks at the whole dataset unlike tf that just looks at the document
                                     labWordTFIDF.Add(Calculations.TFIDF(tf, idf));// Repeat procedure for other appearances of word in other docs in category, will add together later 
                                 }
 
                                 if (governmentDirectoryPosition[i] == Doc.Government.Conservative.ToString())
                                 {
-                                    double tf = Calculations.TF(word, arrayOfFileDictionaries[i]);
-                                    double idf = Calculations.IDF(word, governmentDirectoryPosition[i], governmentDirectoryPosition, arrayOfFileDictionaries);
+                                    double tf = Calculations.TF(word, listOfFileDictionaries[i]);
+                                    double idf = Calculations.IDF(word, governmentDirectoryPosition[i], governmentDirectoryPosition, listOfFileDictionaries);
                                     conWordTFIDF.Add(Calculations.TFIDF(tf, idf));
                                 }
 
                                 if (governmentDirectoryPosition[i] == Doc.Government.Coalition.ToString())
                                 {
-                                    double tf = Calculations.TF(word, arrayOfFileDictionaries[i]);
-                                    double idf = Calculations.IDF(word, governmentDirectoryPosition[i], governmentDirectoryPosition, arrayOfFileDictionaries);
+                                    double tf = Calculations.TF(word, listOfFileDictionaries[i]);
+                                    double idf = Calculations.IDF(word, governmentDirectoryPosition[i], governmentDirectoryPosition, listOfFileDictionaries);
                                     coaWordTFIDF.Add(Calculations.TFIDF(tf, idf));
                                 }
                             }
 
-                            labTFIDF[word.Key] = labWordTFIDF.Sum(); //dict of tfidf value for category
+                            //dict of tfidf value for category
+                            labTFIDF[word.Key] = labWordTFIDF.Sum(); 
                             conTFIDF[word.Key] = conWordTFIDF.Sum();
                             coaTFIDF[word.Key] = coaWordTFIDF.Sum();
 
-                            Console.WriteLine("Labour TFIDF of " + word.Key + ": " + labTFIDF[word.Key]); //this is a slow process so printing out idf to give user feedback
+                            Console.WriteLine("Labour TFIDF of " + word.Key + ": " + labTFIDF[word.Key]); 
                             Console.WriteLine("Conservative TFIDF of " + word.Key + ": " + conTFIDF[word.Key]); 
                             Console.WriteLine("Coalition TFIDF of " + word.Key + ": " + coaTFIDF[word.Key]); 
                             Console.WriteLine();
@@ -367,165 +326,13 @@ namespace automatic_text_classification
                         {
                             double prob = 0D;
 
-                            if (party.ToString() == Doc.Government.Coalition.ToString()) { prob = Calculations.SumOfTFIDFInCategory(coaDict, governmentDirectoryPosition, coaTFIDF, party.ToString(), arrayOfFileDictionaries); }
-                            else if (party.ToString() == Doc.Government.Conservative.ToString()) { prob = Calculations.SumOfTFIDFInCategory(conDict, governmentDirectoryPosition, conTFIDF, party.ToString(), arrayOfFileDictionaries); }
-                            else if (party.ToString() == Doc.Government.Labour.ToString()) { prob = Calculations.SumOfTFIDFInCategory(labDict, governmentDirectoryPosition, labTFIDF, party.ToString(), arrayOfFileDictionaries); }
+                            if (party.ToString() == Doc.Government.Coalition.ToString()) { prob = Calculations.SumOfTFIDFInCategory(coaDict, governmentDirectoryPosition, coaTFIDF, party.ToString(), listOfFileDictionaries); }
+                            else if (party.ToString() == Doc.Government.Conservative.ToString()) { prob = Calculations.SumOfTFIDFInCategory(conDict, governmentDirectoryPosition, conTFIDF, party.ToString(), listOfFileDictionaries); }
+                            else if (party.ToString() == Doc.Government.Labour.ToString()) { prob = Calculations.SumOfTFIDFInCategory(labDict, governmentDirectoryPosition, labTFIDF, party.ToString(), listOfFileDictionaries); }
                             probDict.Add(party.ToString(), prob);
                         }
 
-                        //stopwatch.Stop();
-                        //string benchmark = stopwatch.ElapsedMilliseconds.ToString();
-                        foreach (var pred in probDict) { Console.WriteLine(pred.Key + ": " + pred.Value); }
-                        var logBest = probDict.Aggregate((l, r) => l.Value > r.Value ? l : r).Key; //selects key with highest value by comparing
-                        Console.WriteLine("---------------------");
-                        Console.WriteLine("This document is predicted to be " + logBest + "\n");
-                        //Console.WriteLine("Time taken to process new method in seconds: " + Int32.Parse(benchmark) / 1000);
-                        Console.ReadLine();
-
-
-                        ////////////////////////////// old method
-                        /*foreach (var word in fileDict)
-                        {
-                            List<double> labWordTFIDF = new List<double>();
-                            List<double> conWordTFIDF = new List<double>();
-                            List<double> coaWordTFIDF = new List<double>();
-
-                            foreach (string file in files)
-                            {
-                                string government = "";
-                                Dictionary<string, int> temp = new Dictionary<string, int>();
-                                Calculations.WordFrequency(file, temp, stopWordsFile); // by having this here can remove function from TF and IDF, this could save time
-
-                                if (Doc.DocGovernment(file) == Doc.Government.Labour.ToString())
-                                {
-                                    government = Doc.Government.Labour.ToString();
-                                    double tf = Calculations.TF(word, temp);
-                                    double idf = Calculations.IDF(files, stopWordsFile, word, government); //Need government variable in IDF because it looks at the whole dataset unlike tf that just looks at the document
-                                    labWordTFIDF.Add(Calculations.TFIDF(tf, idf));// repeat procedure for other appearances of word in other docs in category, will add together later 
-                                }
-
-                                if (Doc.DocGovernment(file) == Doc.Government.Conservative.ToString()) 
-                                {
-                                    government = Doc.Government.Conservative.ToString();
-                                    double tf = Calculations.TF(word, temp);
-                                    double idf = Calculations.IDF(files, stopWordsFile, word, government);
-                                    conWordTFIDF.Add(Calculations.TFIDF(tf, idf));
-                                }
-
-                                if (Doc.DocGovernment(file) == Doc.Government.Coalition.ToString()) 
-                                {
-                                    government = Doc.Government.Conservative.ToString();
-                                    double tf = Calculations.TF(word, temp);
-                                    double idf = Calculations.IDF(files, stopWordsFile, word, government);
-                                    coaWordTFIDF.Add(Calculations.TFIDF(tf, idf));
-                                }
-
-                            }
-                            labTFIDF[word.Key] = labWordTFIDF.Sum();
-                            conTFIDF[word.Key] = conWordTFIDF.Sum();
-                            coaTFIDF[word.Key] = coaWordTFIDF.Sum();
-
-                            Console.WriteLine("Labour TFIDF of " + word.Key + ": " + labTFIDF[word.Key]); //this is a slow process so printing out idf to give user feedback
-                            Console.WriteLine("Conservative TFIDF of " + word.Key + ": " + conTFIDF[word.Key]); //this is a slow process so printing out idf to give user feedback
-                            Console.WriteLine("Coalition TFIDF of " + word.Key + ": " + coaTFIDF[word.Key]); //this is a slow process so printing out idf to give user feedback
-                            Console.WriteLine();
-
-                            //Console.WriteLine(word.Key + ": " + labTFIDF[word.Key]); //this is a slow process so printing out idf to give user feedback
-                        }
-
-                        var probDict2 = new Dictionary<string, double>();
-
-                        foreach (Doc.Government party in Enum.GetValues(typeof(Doc.Government)))
-                        {
-                            var tempDict = new Dictionary<string, int>();
-                            var tempDict2 = new Dictionary<string, double>();
-
-                            if (party.ToString() == Doc.Government.Coalition.ToString()) { tempDict = coaDict;  tempDict2 = coaTFIDF; }
-                            else if (party.ToString() == Doc.Government.Conservative.ToString()) {  tempDict = conDict;  tempDict2 = conTFIDF; }
-                            else if (party.ToString() == Doc.Government.Labour.ToString()) {  tempDict = labDict;  tempDict2 = labTFIDF; }
-
-                            //double cp = Calculations.ConditionalProbability(word.Value, catTFIDF.Sum(), catTFIDF.Count());
-                            double prob = Calculations.ProbabilityTFIDF(tempDict, files, stopWordsFile, tempDict2, party.ToString());
-
-                            probDict2.Add(party.ToString(), prob);
-                        }
-
-                        stopwatch.Stop();
-                        string benchmark2 = stopwatch.ElapsedMilliseconds.ToString();
-                        foreach (var pred in probDict2) { Console.WriteLine(pred.Key + ": " + pred.Value); }
-                        Console.WriteLine( "Time taken to process: " + Int32.Parse(benchmark2) / 60000 );
-                        Console.ReadLine();*/
-
-                        /*
-                        List<double> catTFIDF = new List<double>();
-
-                        foreach (var word in labDict)
-                        {
-                            List<double> labWordTFIDF = new List<double>();
-
-                            foreach (string file in files)
-                            {
-                                double tf = Calculations.TF(file, stopWordsFile, word);
-                                double idf = Calculations.IDF(files, stopWordsFile, word, "Labour");
-                                labWordTFIDF.Add(Calculations.TFIDF(tf, idf));
-                                /*
-                                int wordExistInFileCount = 0;
-
-                                if (Doc.DocGovernment(file) == Doc.Government.Labour.ToString())
-                                {
-                                    Dictionary<string, int> tempDict = new Dictionary<string, int>();
-                                    wordCount = Calculations.WordFrequency(file, tempDict, stopWordsFile);
-
-                                    tempDict.TryGetValue(word.Key, out int frequency); //if not found frequency is 0
-
-                                    double tf = frequency / (double)wordCount; //to get floating point arithmetic atleast one variable must be a double
-
-                                    foreach (string doc in files)
-                                    {
-                                        if (Doc.DocGovernment(doc) == Doc.Government.Labour.ToString())
-                                        {
-                                            Dictionary<string, int> tempDict2 = new Dictionary<string, int>();
-                                            Calculations.WordFrequency(doc, tempDict2, stopWordsFile);
-                                            if (tempDict2.ContainsKey(word.Key)) { wordExistInFileCount++; }
-                                        }
-
-                                    }
-                                    // Calculate the IDF for each word
-                                    double idf = 0D;
-
-                                    //Term inverse document requency - number of documents in a category that word appears in
-                                    if (wordExistInFileCount == 0) { idf = 1; } 
-                                    else { idf = 1 + Math.Log(governmentDict["Labour"] / (double)wordExistInFileCount); } 
-
-
-                                    // Calculate TFIDF
-                                    double tfidf = tf * idf;
-                                    labWordTFIDF.Add(tfidf); 
-
-                                    //labTFIDF[word.Key] = tf * idf; 
-                                    //Thus tf-idf of word is:
-                                    //double tfidf = tf * idf;
-                                    //labtfidf.Add(tfidf);
-                                    //}
-                                }
-
-                            }
-                            catTFIDF.Add(labWordTFIDF.Sum()); //list containing tf-idf weights of all words in category
-                            Console.WriteLine(word.Key + ": " + labWordTFIDF.Sum()); //this is a slow process so printing out idf to give user feedback
-                        }
-                        /*
-                        double nCat = catTFIDF.Sum();
-                        Dictionary<string, double> labCpTFIDF = new Dictionary<string, double>();
-
-                        foreach (var word in labTFIDF)
-                        {
-                            //tf-idf uses same conditional probability formula
-                            double cp = Calculations.ConditionalProbability(word.Value, catTFIDF.Sum(), catTFIDF.Count());
-                            labCpTFIDF.Add(word.Key, Math.Log(cp));
-                        }
-
-                        double labprob = labCpTFIDF.Sum(x => x.Value);
-                        */
+                        Calculations.BestGovernment(probDict);
 
                         break;
 
@@ -600,7 +407,7 @@ namespace automatic_text_classification
 
         public static void AnykeyToContinue()
         {
-            Console.WriteLine("\nPress any key to continue.");
+            Console.WriteLine("Press any key to continue");
             Console.ReadKey();
         }
 
