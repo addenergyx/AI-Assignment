@@ -90,8 +90,7 @@ namespace automatic_text_classification
 
                 if (word.EndsWith("ies", StringComparison.CurrentCultureIgnoreCase) || word.EndsWith("ied", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    if (Regex.IsMatch(word, @"^[a-z]ie[sd]")) { word = Regex.Replace(word, ".$", ""); }
-                    else { word = Regex.Replace(word, @"ie[sd]$", "i"); }
+                    word = Regex.IsMatch(word, @"^[a-z]ie[sd]") ? Regex.Replace(word, ".$", "") : Regex.Replace(word, @"ie[sd]$", "i");
                 }
 
                 if (Regex.IsMatch(word, @"[^aeiouy]s$")) { word = Regex.Replace(word, "s$", ""); } //delete s if preceding word part contains a vowel not immediately before the s, In porter stemming y is considered a vowel

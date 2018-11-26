@@ -10,13 +10,12 @@ namespace automatic_text_classification
     {
         public static double PriorProbabilities(string government, int fileCount, Dictionary<string, int> governmentDict)
         {
-            double priorProbability = governmentDict[government] / (double)fileCount;
-            return priorProbability;
+            return governmentDict[government] / (double)fileCount;
         }
 
         public static double ConditionalProbability(double fCat, double nCat, int nWords)
         {
-            //P(word / cata) = (fcata[word]) + 1)  / (Ncata + Nwords)
+            //Conditional probability P(word / cata) = (fcata[word]) + 1)  / (Ncata + Nwords)
             double top = fCat + 1;
             double bottom = nCat + nWords;
             double conditionalProbability = top / bottom;
@@ -50,8 +49,8 @@ namespace automatic_text_classification
 
             // Term inverse document frequency is the number of documents in a category that term appears in
             // IDF is log(number of doc in category/no of doc with that term)
-            if (wordExistInFileCount == 0) { idf = 1; } //For unseen words must use smoothed inverse document frequency techniques as cannot divide a number by 0 (add 1 to wordExistInFileCount)
-            else { idf = 1 + Math.Log(fileCount / (double)wordExistInFileCount); } // 1+ to avoid the "divided by 0" error, if a word appears in all docs of a category then idf will be 1 (lower bound for IDF) as that word is not considered special
+            idf = wordExistInFileCount == 0 ? 1 : 1 + Math.Log(fileCount / (double)wordExistInFileCount); // 1+ to avoid the "divided by 0" error, if a word appears in all docs of a category then idf will be 1 (lower bound for IDF) as that word is not considered special
+            //https://stackoverflow.com/questions/16648599/tfidf-calculating-confusion
 
             return idf;
         }
