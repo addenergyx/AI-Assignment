@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics; //debugging
 using System.Collections.Specialized; //for ListDictionary
+using System.Text;
 
 namespace automatic_text_classification
 {
@@ -414,7 +415,9 @@ namespace automatic_text_classification
         public static void Title()
         {
             Console.Clear();
-            Console.WriteLine("Queen's Speech Automatic Text Classification\n");
+            string title = "Queen's Speech Automatic Text Classification";
+            Console.SetCursorPosition((Console.WindowWidth - title.Length) / 2, Console.CursorTop); //Centres title
+            Console.WriteLine(title + "\n");
         }
 
         string AskForInfoString(string message)
