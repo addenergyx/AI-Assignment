@@ -26,3 +26,10 @@ K:\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_
 K:\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_text_classification.csproj.CoreCompileInputs.cache
 K:\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_text_classification.exe
 K:\AI-Assignment-tf-idf_2\automatic_text_classification\obj\x86\Debug\automatic_text_classification.pdb
+C:\Users\ada121\AI-Assignment-clean_up\automatic_text_classification\bin\Debug\automatic_text_classification.exe.config
+C:\Users\ada121\AI-Assignment-clean_up\automatic_text_classification\bin\Debug\automatic_text_classification.exe
+C:\Users\ada121\AI-Assignment-clean_up\automatic_text_classification\bin\Debug\automatic_text_classification.pdb
+C:\Users\ada121\AI-Assignment-clean_up\automatic_text_classification\obj\x86\Debug\automatic_text_classification.csprojResolveAssemblyReference.cache
+C:\Users\ada121\AI-Assignment-clean_up\automatic_text_classification\obj\x86\Debug\automatic_text_classification.csproj.CoreCompileInputs.cache
+C:\Users\ada121\AI-Assignment-clean_up\automatic_text_classification\obj\x86\Debug\automatic_text_classification.exe
+C:\Users\ada121\AI-Assignment-clean_up\automatic_text_classification\obj\x86\Debug\automatic_text_classification.pdb
