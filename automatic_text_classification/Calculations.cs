@@ -162,7 +162,7 @@ namespace automatic_text_classification
 
             int wordCount = words.Sum(x => x.Value); //Total number of words in each doc including repeats, more efficient then int wordCount = document.Split(' ').Length 
 
-            //Using n-grams - word families
+            // Using n-grams - word families
             List<string> wordFamilies = new List<string>();
 
             Regex wordPairRegex = new Regex(@"(\w+\s+)(?=(\w+))", RegexOptions.IgnorePatternWhitespace); //Regex for pairs of words in a text
