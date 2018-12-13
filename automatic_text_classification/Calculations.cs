@@ -35,7 +35,6 @@ namespace automatic_text_classification
             // Calculates the IDF for each word
             int wordExistInFileCount = 0;
             int fileCount = 0;
-            double idf = 0D;
 
             // Looping through predetermined wordfrequency, quicker then calling WordFrequency() many times
             for (int i = 0; i < governmentDirectoryPosition.Count; i++)
@@ -49,8 +48,8 @@ namespace automatic_text_classification
 
             // Term inverse document frequency is the number of documents in a category that term appears in
             // IDF is log(number of doc in category/no of doc with that term)
-            idf = wordExistInFileCount == 0 ? 1 : 1 + Math.Log(fileCount / (double)wordExistInFileCount); // 1+ to avoid the "divided by 0" error, if a word appears in all docs of a category then idf will be 1 (lower bound for IDF) as that word is not considered special
-            //https://stackoverflow.com/questions/16648599/tfidf-calculating-confusion
+            double idf = wordExistInFileCount == 0 ? 1 : 1 + Math.Log(fileCount / (double)wordExistInFileCount); // 1+ to avoid the "divided by 0" error, if a word appears in all docs of a category then idf will be 1 (lower bound for IDF) as that word is not considered special
+            //https://stackoverflow.com/questions/16648599/tfidf-calculating-confusion6
 
             return idf;
         }
@@ -77,7 +76,7 @@ namespace automatic_text_classification
                 }
 
                 catTFIDF.Add(tempCategoryWordTFIDF.Sum()); //list containing tf-idf weights of all words in category
-                Console.WriteLine(government + ": " + word.Key + ": " + tempCategoryWordTFIDF.Sum()); //this is a slow process so printing out idf to give user feedback
+                //Console.WriteLine(government + ": " + word.Key + ": " + tempCategoryWordTFIDF.Sum()); //this is a slow process so printing out idf to give user feedback
             }
 
             double nCat = catTFIDF.Sum();
@@ -107,6 +106,11 @@ namespace automatic_text_classification
                 if (concpdict.ContainsKey(word)) { conLogProb += Math.Log(Math.Pow(concpdict[word], testDict[word])); } //Addition of logs is the same as multiplication of real numbers
                 if (coacpdict.ContainsKey(word)) { coaLogProb += Math.Log(Math.Pow(coacpdict[word], testDict[word])); }
                 if (labcpdict.ContainsKey(word)) { labLogProb += Math.Log(Math.Pow(labcpdict[word], testDict[word])); }
+
+
+                //if (concpdict.ContainsKey(word)) { conLogProb *= Math.Pow(concpdict[word], testDict[word]); }
+                //if (coacpdict.ContainsKey(word)) { coaLogProb *= Math.Pow(coacpdict[word], testDict[word]); }
+                //if (labcpdict.ContainsKey(word)) { labLogProb *= Math.Pow(labcpdict[word], testDict[word]); }
             }
 
             conLogProb += Math.Log(conPriorProbability); //The logarithm of a positive number may be negative or zero. log of a decimal will probably give a negative number
@@ -165,6 +169,7 @@ namespace automatic_text_classification
 
             Regex wordPairRegex = new Regex(@"(\w+\s+)(?=(\w+))", RegexOptions.IgnorePatternWhitespace); //Regex for pairs of words in a text
             Match matchResult = wordPairRegex.Match(document);
+
             while (matchResult.Success)
             {
                 wordFamilies.Add(matchResult.Groups[1].Value + matchResult.Groups[2].Value);

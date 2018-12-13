@@ -124,8 +124,8 @@ namespace automatic_text_classification
                             labcpdict.Add(fcat.Key, cp);
                         }
 
-                        //pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
-                        pathToTest = "test_dataset/test1.txt"; //for testing purposes
+                        pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
+                        //pathToTest = "test_dataset/test1.txt"; //for testing purposes
 
                         Calculations.WordFrequency(pathToTest, fileDict, stopWordsFile);
                         Calculations.Classification(fileDict, concpdict, coacpdict, labcpdict, conPriorProbability,
@@ -256,8 +256,8 @@ namespace automatic_text_classification
                             }
                         }
 
-                        //pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
-                        pathToTest = "test_dataset/test1.txt"; //for testing purposes
+                        pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
+                        //pathToTest = "test_dataset/test1.txt"; //for testing purposes
 
                         Calculations.WordFrequency(pathToTest, fileDict, stopWordsFile); // dictionary of term frequency of test doc
                         
@@ -314,10 +314,10 @@ namespace automatic_text_classification
                             conTFIDF[word.Key] = conWordTFIDF.Sum();
                             coaTFIDF[word.Key] = coaWordTFIDF.Sum();
 
-                            Console.WriteLine("Labour TFIDF of " + word.Key + ": " + labTFIDF[word.Key]); 
-                            Console.WriteLine("Conservative TFIDF of " + word.Key + ": " + conTFIDF[word.Key]); 
-                            Console.WriteLine("Coalition TFIDF of " + word.Key + ": " + coaTFIDF[word.Key]); 
-                            Console.WriteLine();
+                            //Console.WriteLine("Labour TFIDF of " + word.Key + ": " + labTFIDF[word.Key]); 
+                            //Console.WriteLine("Conservative TFIDF of " + word.Key + ": " + conTFIDF[word.Key]); 
+                            //Console.WriteLine("Coalition TFIDF of " + word.Key + ": " + coaTFIDF[word.Key]); 
+                            //Console.WriteLine();
                         }
 
                         var probDict = new Dictionary<string, double>();
