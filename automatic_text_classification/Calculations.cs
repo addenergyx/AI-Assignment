@@ -103,14 +103,12 @@ namespace automatic_text_classification
             foreach (var word in testDict.Keys)
             {
                 //can't use inverse due to overflow so must keep in log form
-                if (concpdict.ContainsKey(word)) { conLogProb += Math.Log(Math.Pow(concpdict[word], testDict[word])); } //Addition of logs is the same as multiplication of real numbers
-                if (coacpdict.ContainsKey(word)) { coaLogProb += Math.Log(Math.Pow(coacpdict[word], testDict[word])); }
-                if (labcpdict.ContainsKey(word)) { labLogProb += Math.Log(Math.Pow(labcpdict[word], testDict[word])); }
-
-
-                //if (concpdict.ContainsKey(word)) { conLogProb *= Math.Pow(concpdict[word], testDict[word]); }
-                //if (coacpdict.ContainsKey(word)) { coaLogProb *= Math.Pow(coacpdict[word], testDict[word]); }
-                //if (labcpdict.ContainsKey(word)) { labLogProb *= Math.Pow(labcpdict[word], testDict[word]); }
+                if (concpdict.ContainsKey(word)) { conLogProb += (Math.Log(concpdict[word]) * testDict[word]); } //Addition of logs is the same as multiplication of real numbers
+                if (coacpdict.ContainsKey(word)) { coaLogProb += (Math.Log(coacpdict[word]) * testDict[word]); } //If word not in entire training data thn it is dropped
+                if (labcpdict.ContainsKey(word)) { labLogProb += (Math.Log(labcpdict[word]) * testDict[word]); }
+                //if (concpdict.ContainsKey(word)) { conLogProb += Math.Log(Math.Pow(concpdict[word], testDict[word])); } 
+                //if (coacpdict.ContainsKey(word)) { coaLogProb += Math.Log(Math.Pow(coacpdict[word], testDict[word])); }
+                //if (labcpdict.ContainsKey(word)) { labLogProb += Math.Log(Math.Pow(labcpdict[word], testDict[word])); }
             }
 
             conLogProb += Math.Log(conPriorProbability); //The logarithm of a positive number may be negative or zero. log of a decimal will probably give a negative number
@@ -118,11 +116,11 @@ namespace automatic_text_classification
             labLogProb += Math.Log(labPriorProbability);
 
             var predLogDict = new Dictionary<string, double>
-                        {
-                            {Doc.Government.Labour.ToString(), labLogProb },
-                            {Doc.Government.Conservative.ToString(), conLogProb},
-                            {Doc.Government.Coalition.ToString(), coaLogProb}
-                        };
+            {
+                {Doc.Government.Labour.ToString(), labLogProb },
+                {Doc.Government.Conservative.ToString(), conLogProb},
+                {Doc.Government.Coalition.ToString(), coaLogProb}
+            };
 
             BestGovernment(predLogDict);
 

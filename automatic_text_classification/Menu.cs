@@ -325,11 +325,27 @@ namespace automatic_text_classification
                         //part b
                         foreach (Doc.Government party in Enum.GetValues(typeof(Doc.Government)))
                         {
+                            double prior = 0D;
                             double prob = 0D;
 
-                            if (party.ToString() == Doc.Government.Coalition.ToString()) { prob = Calculations.SumOfTFIDFInCategory(coaDict, governmentDirectoryPosition, coaTFIDF, party.ToString(), listOfFileDictionaries); }
-                            else if (party.ToString() == Doc.Government.Conservative.ToString()) { prob = Calculations.SumOfTFIDFInCategory(conDict, governmentDirectoryPosition, conTFIDF, party.ToString(), listOfFileDictionaries); }
-                            else if (party.ToString() == Doc.Government.Labour.ToString()) { prob = Calculations.SumOfTFIDFInCategory(labDict, governmentDirectoryPosition, labTFIDF, party.ToString(), listOfFileDictionaries); }
+                            if (party.ToString() == Doc.Government.Coalition.ToString())
+                            {
+                                prob = Calculations.SumOfTFIDFInCategory(coaDict, governmentDirectoryPosition, coaTFIDF, party.ToString(), listOfFileDictionaries);
+                                prior = governmentDirectoryPosition.Count(x => x == party.ToString()) / (double)governmentDirectoryPosition.Count;
+                                prob += Math.Log(prior);
+                            }
+                            else if (party.ToString() == Doc.Government.Conservative.ToString())
+                            {
+                                prob = Calculations.SumOfTFIDFInCategory(conDict, governmentDirectoryPosition, conTFIDF, party.ToString(), listOfFileDictionaries);
+                                prior = governmentDirectoryPosition.Count(x => x == party.ToString()) / (double)governmentDirectoryPosition.Count;
+                                prob += Math.Log(prior);
+                            }
+                            else if (party.ToString() == Doc.Government.Labour.ToString())
+                            {
+                                prob = Calculations.SumOfTFIDFInCategory(labDict, governmentDirectoryPosition, labTFIDF, party.ToString(), listOfFileDictionaries);
+                                prior = governmentDirectoryPosition.Count(x => x == party.ToString()) / (double)governmentDirectoryPosition.Count; // Prior Probability
+                                prob += Math.Log(prior);
+                            }
                             probDict.Add(party.ToString(), prob);
                         }
 
