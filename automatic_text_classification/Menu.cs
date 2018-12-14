@@ -46,8 +46,8 @@ namespace automatic_text_classification
 
                         pathToDir = Doc.DirectoryExists(PathToDirectory());
 
-                        //stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words file"); // Stopwords lookup table
-                        stopWordsFile = "stopwords.txt"; // for testing purposes
+                        stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words file"); // Stopwords lookup table
+                        //stopWordsFile = "stopwords.txt"; // for testing purposes
 
                         Console.WriteLine("Training datasets: " + Doc.FileCount(pathToDir));
 
@@ -223,8 +223,8 @@ namespace automatic_text_classification
 
                         pathToDir = Doc.DirectoryExists(PathToDirectory());
 
-                        //stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words file");
-                        stopWordsFile = "stopwords.txt"; // for testing purposes
+                        stopWordsFile = Doc.FileExists(PathToStopWords(), "stop words file");
+                        //stopWordsFile = "stopwords.txt"; // for testing purposes
 
                         Console.WriteLine("Training datasets: " + Doc.FileCount(pathToDir));
 

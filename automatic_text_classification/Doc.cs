@@ -31,7 +31,7 @@ namespace automatic_text_classification
             {
                 Console.WriteLine("Path does not exist!!! Please enter full path to training data directory");
                 pathToDir = Console.ReadLine().Trim();
-                pathToDir = "training_dataset"; //gets file from debug/bin - for testing purposes at the moment
+                //pathToDir = "training_dataset"; //gets file from debug/bin - for testing purposes at the moment
             }
             return pathToDir;
         }

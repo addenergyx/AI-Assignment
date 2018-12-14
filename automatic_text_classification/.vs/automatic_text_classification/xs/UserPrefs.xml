@@ -1,10 +1,10 @@
 ﻿<Properties StartupConfiguration="{93727225-2C84-41B9-8575-698F7E7D2948}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="Menu.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Calculations.cs">
     <Files>
       <File FileName="Doc.cs" Line="117" Column="36" />
       <File FileName="BayesianNetwork.cs" Line="14" Column="44" />
-      <File FileName="Calculations.cs" Line="79" Column="19" />
-      <File FileName="Menu.cs" Line="342" Column="42" />
+      <File FileName="Calculations.cs" Line="165" Column="16" />
+      <File FileName="Menu.cs" Line="378" Column="10" />
       <File FileName="Program.cs" Line="8" Column="10" />
     </Files>
   </MonoDevelop.Ide.Workbench>
