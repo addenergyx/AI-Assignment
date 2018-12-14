@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics; //debugging
 using System.Collections.Specialized; //for ListDictionary
+using System.Text;
 
 namespace automatic_text_classification
 {
@@ -123,8 +124,8 @@ namespace automatic_text_classification
                             labcpdict.Add(fcat.Key, cp);
                         }
 
-                        //pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
-                        pathToTest = "test_dataset/test1.txt"; //for testing purposes
+                        pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
+                        //pathToTest = "test_dataset/test1.txt"; //for testing purposes
 
                         Calculations.WordFrequency(pathToTest, fileDict, stopWordsFile);
                         Calculations.Classification(fileDict, concpdict, coacpdict, labcpdict, conPriorProbability,
@@ -255,8 +256,8 @@ namespace automatic_text_classification
                             }
                         }
 
-                        //pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
-                        pathToTest = "test_dataset/test1.txt"; //for testing purposes
+                        pathToTest = Doc.FileExists(PathToTestDocument(), "test document");
+                        //pathToTest = "test_dataset/test1.txt"; //for testing purposes
 
                         Calculations.WordFrequency(pathToTest, fileDict, stopWordsFile); // dictionary of term frequency of test doc
                         
@@ -313,10 +314,10 @@ namespace automatic_text_classification
                             conTFIDF[word.Key] = conWordTFIDF.Sum();
                             coaTFIDF[word.Key] = coaWordTFIDF.Sum();
 
-                            Console.WriteLine("Labour TFIDF of " + word.Key + ": " + labTFIDF[word.Key]); 
-                            Console.WriteLine("Conservative TFIDF of " + word.Key + ": " + conTFIDF[word.Key]); 
-                            Console.WriteLine("Coalition TFIDF of " + word.Key + ": " + coaTFIDF[word.Key]); 
-                            Console.WriteLine();
+                            //Console.WriteLine("Labour TFIDF of " + word.Key + ": " + labTFIDF[word.Key]); 
+                            //Console.WriteLine("Conservative TFIDF of " + word.Key + ": " + conTFIDF[word.Key]); 
+                            //Console.WriteLine("Coalition TFIDF of " + word.Key + ": " + coaTFIDF[word.Key]); 
+                            //Console.WriteLine();
                         }
 
                         var probDict = new Dictionary<string, double>();
@@ -324,11 +325,27 @@ namespace automatic_text_classification
                         //part b
                         foreach (Doc.Government party in Enum.GetValues(typeof(Doc.Government)))
                         {
+                            double prior = 0D;
                             double prob = 0D;
 
-                            if (party.ToString() == Doc.Government.Coalition.ToString()) { prob = Calculations.SumOfTFIDFInCategory(coaDict, governmentDirectoryPosition, coaTFIDF, party.ToString(), listOfFileDictionaries); }
-                            else if (party.ToString() == Doc.Government.Conservative.ToString()) { prob = Calculations.SumOfTFIDFInCategory(conDict, governmentDirectoryPosition, conTFIDF, party.ToString(), listOfFileDictionaries); }
-                            else if (party.ToString() == Doc.Government.Labour.ToString()) { prob = Calculations.SumOfTFIDFInCategory(labDict, governmentDirectoryPosition, labTFIDF, party.ToString(), listOfFileDictionaries); }
+                            if (party.ToString() == Doc.Government.Coalition.ToString())
+                            {
+                                prob = Calculations.SumOfTFIDFInCategory(coaDict, governmentDirectoryPosition, coaTFIDF, party.ToString(), listOfFileDictionaries);
+                                prior = governmentDirectoryPosition.Count(x => x == party.ToString()) / (double)governmentDirectoryPosition.Count;
+                                prob += Math.Log(prior);
+                            }
+                            else if (party.ToString() == Doc.Government.Conservative.ToString())
+                            {
+                                prob = Calculations.SumOfTFIDFInCategory(conDict, governmentDirectoryPosition, conTFIDF, party.ToString(), listOfFileDictionaries);
+                                prior = governmentDirectoryPosition.Count(x => x == party.ToString()) / (double)governmentDirectoryPosition.Count;
+                                prob += Math.Log(prior);
+                            }
+                            else if (party.ToString() == Doc.Government.Labour.ToString())
+                            {
+                                prob = Calculations.SumOfTFIDFInCategory(labDict, governmentDirectoryPosition, labTFIDF, party.ToString(), listOfFileDictionaries);
+                                prior = governmentDirectoryPosition.Count(x => x == party.ToString()) / (double)governmentDirectoryPosition.Count; // Prior Probability
+                                prob += Math.Log(prior);
+                            }
                             probDict.Add(party.ToString(), prob);
                         }
 
@@ -414,7 +431,9 @@ namespace automatic_text_classification
         public static void Title()
         {
             Console.Clear();
-            Console.WriteLine("Queen's Speech Automatic Text Classification\n");
+            string title = "Queen's Speech Automatic Text Classification";
+            Console.SetCursorPosition((Console.WindowWidth - title.Length) / 2, Console.CursorTop); //Centres title
+            Console.WriteLine(title + "\n");
         }
 
         string AskForInfoString(string message)
