@@ -7,10 +7,13 @@ In the UK, ‘The Queen’s Speech’ is delivered by the Queen normally once a 
 Eight Queen’s Speech text files are available for use for this assignment and available on Canvas; five are a training set and three are unknowns for testing purposes. This data was obtained by copying and pasting from publically available archives, in particular>  https://www.parliament.uk/about/faqs/house-of-lords-faqs/lords-stateopening/  The only pre-processing that has occurred is the removal of non-verbal content and speech marks. Although probably not required, you may if you wish extend the dataset or change the training and/or test data (a little internet searching will find plenty of on-line archive links similar to the above). 
  
  
-Program requirements Given that all students should have a background in C# console programming in fairness to all, your implementation must conform to the following two requirements: 1. Language must be C# 2. Application must be console based (a GUI interface would be an unnecessary distraction to the AI aspect of this work). 
+Program requirements Given that all students should have a background in C# console programming in fairness to all, your implementation must conform to the following two requirements: 
+1. Language must be C# 
+2. Application must be console based (a GUI interface would be an unnecessary distraction to the AI aspect of this work). 
  
  
 
  Program functionality Your program should do the following: 
  
-1. On start up the program should prompt the user to either a) undertake training or b) undertake a classification. If training is chosen, the user must specify the relevant input source code file(s). After training the program should optionally write the Bayesian network to file and default to the classification option. If classification is chosen, the user must either use the current network created by the prior training phase or read a pre-trained network from file. The user then enters the filename of the document to be classified, and a result is displayed back to the user. 2. Appropriate statistics concerning training and classification should also be presented. 
+1. On start up the program should prompt the user to either a) undertake training or b) undertake a classification. If training is chosen, the user must specify the relevant input source code file(s). After training the program should optionally write the Bayesian network to file and default to the classification option. If classification is chosen, the user must either use the current network created by the prior training phase or read a pre-trained network from file. The user then enters the filename of the document to be classified, and a result is displayed back to the user. 
+2. Appropriate statistics concerning training and classification should also be presented. 
